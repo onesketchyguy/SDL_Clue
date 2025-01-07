@@ -1,0 +1,58 @@
+# The sprite data
+width: 64
+height: 64
+cols: 3
+rows: 2
+
+spriteName: sprites/suspects.png
+
+# The characters will appear in order of names indicated here
+characters:
+  - name: Colonel Gas
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+  - name: Mrs. Wratz
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+  - name: Professor F. Cake
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+  - name: Deboi Frances
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+  - name: Sir Martine
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+  - name: Miss Rouge
+    motives:
+      - Blackmailing 
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument

@@ -1,0 +1,16 @@
+# The sprite data
+width: 32
+height: 32
+cols: 3
+rows: 2
+
+spriteName: sprites/weapons.png
+
+# The items will appear in order of names indicated here
+names:
+  - Hammer
+  - Dagger
+  - Trophy
+  - Gun
+  - Lawn gnome
+  - Poison
