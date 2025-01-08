@@ -29,6 +29,7 @@ class Clue
 
 	void LoadSuspects();
 	void LoadWeapons();
+	void LoadGenerics();
 
 	MapView* mapView = nullptr;
 

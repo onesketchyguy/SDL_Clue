@@ -294,6 +294,7 @@ int SDLWrapper::LoadSprite(const std::string& path)
 	if (instance->textures.count(path) <= 0) instance->textures.emplace(path, texture);
 	else
 	{
+		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite is replacing an existing item. %s already existed in the database!", path.c_str());
 		try
 		{
 			if (instance->textures[path] != NULL) SDL_DestroyTexture((SDL_Texture*)instance->textures[path]);
