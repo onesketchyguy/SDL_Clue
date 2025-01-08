@@ -13,19 +13,26 @@ struct StaticScene
 {
 	std::string background;
 	std::string line;
-	std::vector<std::string> response;
+	std::vector<Card> response;
 };
 
 // Override base class with your custom functionality
 class Clue
 {
+public:
+	enum HoldingType { NONE, SUSPECT, WEAPON };
+	Clue();
+
+	bool OnUserUpdate(float deltaTime);
+private:
 	std::vector<QuestionObject> questions{
-		{.text = "Who?", .pos = {100, 100}},
-		{.text = "What?", .pos = {100, 120}},
-		{.text = "Where?", .pos = {100, 140}},
-		{.text = "Why?", .pos = {100, 160}}
+		{.text = "Who?", .pos = {150, 100}},
+		{.text = "What?", .pos = {150, 140}},
+		{.text = "Where?", .pos = {150, 160}},
+		{.text = "Why?", .pos = {150, 180}}
 	};
 
+	SpriteData responseSprite;
 	SpriteData suspectSprite;
 	SpriteData weaponSprite;
 
@@ -57,18 +64,10 @@ class Clue
 	GameState state = Introduction;
 
 	int holdIndex = -1;
-	enum HoldingType { NONE, SUSPECT, WEAPON };
 	HoldingType holding = NONE;
 
-	bool DisplaySuspectCards();
-	bool DisplayWeaponCards();
 	void DisplayAccusing();
 	void DisplayKiller(bool foundKiller);
 	void DisplayInterview(float deltaTime);
 	void DisplayIntroduction(float deltaTime);
-
-public:
-	Clue();
-public:
-	bool OnUserUpdate(float deltaTime);
 };

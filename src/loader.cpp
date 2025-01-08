@@ -117,6 +117,7 @@ std::vector<Room> Clue::LoadRooms()
 void Clue::LoadIntroScene()
 {
 	std::cout << "Loading intro scene..." << std::endl;
+	responseSprite.Load("sprites/response.png", 64, 64, 1, 1);
 
 	YAML::Node root;
 	YAML::Parse(root, "config/intro.yaml");
@@ -128,7 +129,7 @@ void Clue::LoadIntroScene()
 		{
 			for (auto m = (*it).second.Begin(); m != (*it).second.End(); m++)
 			{
-				introScene.response.push_back((*m).second.As<std::string>());
+				introScene.response.push_back({ (*m).second.As<std::string>(), responseSprite, 0, Clue::NONE });
 			}
 		}
 		else if ((*it).first == "speakerLine") introScene.line = (*it).second.As<std::string>();
@@ -142,10 +143,10 @@ void Clue::LoadIntroScene()
 
 void Clue::LoadData(std::vector<Room>& rooms)
 {
-	LoadIntroScene();
 	LoadSuspects();
 	LoadWeapons();
 	rooms = LoadRooms();
+	LoadIntroScene();
 
 	// TODO: Load the player using yaml
 	SDLWrapper::LoadSprite("sprites/player.png");

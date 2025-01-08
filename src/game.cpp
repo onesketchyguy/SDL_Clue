@@ -1,89 +1,48 @@
 #include "game.hpp"
 #include "SDLWrapper.hpp"
 
-bool Clue::DisplaySuspectCards()
+template <typename T>
+gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Clue::HoldingType& holding, gobl::vec2i pos)
 {
-	gobl::vec2i suspectPos = gobl::vec2i{ 10, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 5) };
-	const int SUSPECT_SPACING = (int)std::floor((float)Card::CARD_RECT.x * 0.5f);
+	// Ensure T is derived from Card
+	static_assert(std::is_base_of<Card, T>::value, "T must be derived from Card");
 
-	for (int i = 0; i < suspects.size(); i++)
+	const int SPACING = 15 * 4;
+	for (int i = 0; i < cards.size(); i++)
 	{
-		auto suspect = suspects.at(i);
-		bool mouseOver = suspect.mouseOver(suspectPos);
-
-		if (holdIndex == i && holding == SUSPECT)
-		{
-			suspect.Draw(SDLWrapper::getMousePos());
-
-			if (SDLWrapper::getMouse().y > suspectPos.y - 20) suspectPos.x += (SUSPECT_SPACING * 2) + 10;
-		}
-		else
-		{
-			if (mouseOver)
-			{
-				// SDLWrapper::DrawString(suspect.name, suspectPos - gobl::vec2<int>{ 0, 16 }, sdl::BLACK);
-				suspect.Draw(suspectPos - gobl::vec2<int>{ 0, 4 });
-
-				if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
-				{
-					holdIndex = i;
-					holding = SUSPECT;
-				}
-				suspectPos.x += SUSPECT_SPACING + 10;
-			}
-			else
-			{
-				suspect.Draw(suspectPos);
-			}
-
-			suspectPos.x += SUSPECT_SPACING;
-		}
-	}
-
-	if (SDLWrapper::getMouse().bRelease(0)) holdIndex = -1;
-
-	return holdIndex != -1 && holding == SUSPECT;
-}
-
-bool Clue::DisplayWeaponCards()
-{
-	gobl::vec2<int> pos = gobl::vec2<int>{ 30, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 5) - Card::CARD_RECT.y };
-	const int SPACING = (int)std::floor((float)Card::CARD_RECT.x * 0.5f);
-
-	for (int i = 0; i < weapons.size(); i++)
-	{
-		auto item = weapons.at(i);
+		auto item = cards.at(i);
 		bool mouseOver = item.mouseOver(pos);
 
-		if (holdIndex == i && holding == WEAPON)
+		if (holdIndex == i)
 		{
-			item.Draw(SDLWrapper::getMousePos());
+			item.Draw(SDLWrapper::getMousePos() + gobl::vec2<int>{ 0, -16 });
 
 			if (SDLWrapper::getMouse().y > pos.y - 20) pos.x += (SPACING * 2) + 10;
 		}
 		else
 		{
+			if (mouseOver) pos.y -= 10;
+
+			item.Draw(pos);
+
 			if (mouseOver)
 			{
-				item.Draw(pos - gobl::vec2<int>{ 0, 4 });
-
 				if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
 				{
 					holdIndex = i;
-					holding = WEAPON;
+					holding = (Clue::HoldingType)item.type;
 				}
+
+				pos.y += 20;
 				pos.x += SPACING + 10;
-			}
-			else
-			{
-				item.Draw(pos);
 			}
 
 			pos.x += SPACING;
+			pos.y += i % 2 == 0 ? 2 : -2;
 		}
 	}
 
-	return holdIndex != -1 && holding == WEAPON;
+	return pos;
 }
 
 void Clue::DisplayAccusing()
@@ -113,8 +72,8 @@ void Clue::DisplayAccusing()
 		if (q.text == "Where?") q.answer = mapView->GetMurderRoom();
 	}
 
-	DisplayWeaponCards();
-	DisplaySuspectCards();
+	gobl::vec2i pos = DrawCards(weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+	DrawCards(suspects, holdIndex, holding, pos);
 
 	if (SDLWrapper::getMouse().bRelease(0))
 	{
@@ -175,6 +134,7 @@ void Clue::DisplayKiller(bool foundKiller)
 
 void Clue::DisplayInterview(float deltaTime)
 {
+	// FIXME: Move this over to cards
 	gobl::vec2<int> speachBubblePos = gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 };
 	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - suspectSprite.height };
 
@@ -263,7 +223,6 @@ void Clue::DisplayInterview(float deltaTime)
 
 void Clue::DisplayIntroduction(float deltaTime)
 {
-	// FIXME: Use YAML to load what sprite this is
 	SDLWrapper::DrawSprite(introScene.background);
 
 	const int FONT_SIZE = 32;
@@ -276,46 +235,11 @@ void Clue::DisplayIntroduction(float deltaTime)
 
 	if (continueFactor.answer.size() < 2)
 	{
-		gobl::vec2<int> pos = { 5, SDLWrapper::getScreenHeight() - 64 };
-		const int SPACING = 15 * 4;
-
-		for (int i = 0; i < introScene.response.size(); i++)
-		{
-			auto item = introScene.response.at(i);
-			bool mouseOver = SDLWrapper::getMouse().x < pos.x + SPACING + 12 && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().y < pos.y + 64 && SDLWrapper::getMouse().y > pos.y;
-
-			if (holdIndex == i) // FIXME: We need cards for these guys too
-			{
-				// sdl::CardRect(SDLWrapper::getMousePos(), { SPACING + 12, 64 }, sdl::DARK_GREY);
-				SDLWrapper::DrawString(item, SDLWrapper::getMousePos() + gobl::vec2<int>{ 0, 16 }, sdl::BLACK);
-
-				if (SDLWrapper::getMouse().y > pos.y - 20) pos.x += (SPACING * 2) + 10;
-			}
-			else
-			{
-				if (mouseOver) pos.y -= 10;
-
-				// sdl::CardRect(pos, { SPACING + 12, 64 }, sdl::DARK_GREY);
-				SDLWrapper::DrawString(item, pos + gobl::vec2<int>{ 0, 16 }, sdl::BLACK);
-
-				if (mouseOver)
-				{
-					if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
-					{
-						holdIndex = i;
-					}
-
-					pos.y += 10;
-					pos.x += SPACING + 10;
-				}
-
-				pos.x += SPACING;
-			}
-		}
+		DrawCards(introScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (continueFactor.mouseOver()) continueFactor.answer = introScene.response.at(holdIndex);
+			if (continueFactor.mouseOver()) continueFactor.answer = introScene.response.at(holdIndex).name;
 			holdIndex = -1;
 		}
 	}
@@ -324,7 +248,7 @@ void Clue::DisplayIntroduction(float deltaTime)
 		const float MAX_TIME = 5.0f;
 		static float time = 0.0f;
 		time += deltaTime;
-		SDLWrapper::DrawString("Arriving to crime scene in " + std::to_string(int(ceil(MAX_TIME - time))) + "...", gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() - 12 }, sdl::WHITE);
+		SDLWrapper::DrawString("Arriving to crime scene in " + std::to_string(int(ceil(MAX_TIME - time))) + "...", gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() - 16 }, sdl::BLACK);
 		if (time >= MAX_TIME) state = Investigating;
 	}
 }
