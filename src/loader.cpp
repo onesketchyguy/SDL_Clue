@@ -29,7 +29,6 @@ void Clue::LoadSuspects()
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
 				suspectNames.push_back((*o).second["name"].As<std::string>());
-				// FIXME: Read for motives next
 				for (auto m = (*o).second["motives"].Begin(); m != (*o).second["motives"].End(); m++)
 				{
 					if (suspectMotives.size() < killer + 1) suspectMotives.push_back(std::vector<std::string>{});
@@ -79,12 +78,77 @@ void Clue::LoadWeapons()
 	for (int i = 0; i < names.size(); i++) weapons.push_back({ names.at(i), weaponSprite, i });
 }
 
-void Clue::LoadGenerics()
+std::vector<Room> Clue::LoadRooms()
 {
-    // TODO: Load the backgrounds for each room
-    SDLWrapper::LoadSprite("sprites/detectiveoffice.png");
+	std::vector<Room> data;
+	std::vector<std::string> rooms{};
+	std::cout << "Loading rooms..." << std::endl;
 
-    // TODO: Load the player
+	YAML::Node root;
+	YAML::Parse(root, "config/rooms.yaml");
+
+	// Iterate second sequence item.
+	for (auto it = root.Begin(); it != root.End(); it++)
+	{
+		// std::cout << (*it).first << ": " << std::to_string((*it).second.As<int>()) << std::endl;
+		if ((*it).first == "rooms")
+		{
+			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
+			{
+				std::string sprite = "";
+				if ((*o).second["sprite"].Type() != 0)
+				{
+					sprite = (*o).second["sprite"].As<std::string>();
+					SDLWrapper::LoadSprite(sprite);
+				}
+				if ((*o).second["char"].Type() != 0)
+				{
+					data.push_back(Room{.index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite});
+				}
+				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map
+				
+			}
+		}
+	}
+
+	std::cout << "Done loading rooms.." << std::endl;
+	return data;
+}
+
+void Clue::LoadIntroScene()
+{
+	std::cout << "Loading intro scene..." << std::endl;
+
+	YAML::Node root;
+	YAML::Parse(root, "config/intro.yaml");
+
+	// Iterate second sequence item.
+	for (auto it = root.Begin(); it != root.End(); it++)
+	{
+		if ((*it).first == "responses")
+		{
+			for (auto m = (*it).second.Begin(); m != (*it).second.End(); m++)
+			{
+				introScene.response.push_back((*m).second.As<std::string>());
+			}
+		}
+		else if ((*it).first == "speakerLine") introScene.line = (*it).second.As<std::string>();
+		else if ((*it).first == "bgSprite")
+		{
+			introScene.background = (*it).second.As<std::string>();
+			SDLWrapper::LoadSprite(introScene.background);
+		}
+	}
+}
+
+void Clue::LoadData(std::vector<Room>& rooms)
+{
+	LoadIntroScene();
+	LoadSuspects();
+	LoadWeapons();
+	rooms = LoadRooms();
+
+    // TODO: Load the player using yaml
     SDLWrapper::LoadSprite("sprites/player.png");
 
     // TODO: Load sounds

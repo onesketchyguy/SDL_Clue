@@ -1,0 +1,32 @@
+# The sprite data
+width: 800
+height: 800
+
+# The room data
+rooms:
+  - name: Hallway
+    char: '.'
+  - name: Study
+    char: 's'
+    sprite: sprites/detectiveoffice.png
+  - name: Hall
+    char: 'h'
+    # sprite: sprites/detectiveoffice.png
+  - name: Lounge
+    char: 'l'
+    # sprite: sprites/detectiveoffice.png
+  - name: Library
+    char: 'b'
+    # sprite: sprites/detectiveoffice.png
+  - name: Dining room
+    char: 'f'
+    # sprite: sprites/detectiveoffice.png
+  - name: Billiard room
+    char: 'd'
+    # sprite: sprites/detectiveoffice.png
+  - name: Kitchen
+    char: 'k'
+    # sprite: sprites/detectiveoffice.png
+  - name: Conservatory
+    char: 'c'
+    # sprite: sprites/detectiveoffice.png

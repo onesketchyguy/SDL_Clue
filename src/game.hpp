@@ -9,6 +9,13 @@
 #include "mapView.hpp"
 #include "button.hpp"
 
+struct StaticScene
+{
+	std::string background;
+	std::string line;
+	std::vector<std::string> response;
+};
+
 // Override base class with your custom functionality
 class Clue
 {
@@ -27,9 +34,13 @@ class Clue
 
 	int killer = 0, weapon = 0, interviewing = 0;
 
+	StaticScene introScene{};
+
 	void LoadSuspects();
 	void LoadWeapons();
-	void LoadGenerics();
+	std::vector<Room> LoadRooms();
+	void LoadIntroScene();
+	void LoadData(std::vector<Room>& rooms);
 
 	MapView* mapView = nullptr;
 

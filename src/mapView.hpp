@@ -1,6 +1,14 @@
 #pragma once
 #include "portal.h"
 #include "suspect.hpp"
+#include <iostream>
+
+struct Room 
+{
+	char index;
+	std::string name;
+	std::string sprite;
+};
 
 class MapView
 {
@@ -43,18 +51,8 @@ class MapView
 		"ccccc..dddddddd..kkkkk"
 		"ccccc....dddd....kkkkk";
 
-	std::map<char, std::string> roomNames{
-		{'s', "Study"},
-		{'h', "Hall"},
-		{'l', "Lounge"},
-		{'b', "Library"},
-		{'f', "Dining room"},
-		{'p', "Billiard Room"},
-		{'d', "Ball room"},
-		{'k', "Kitchen"},
-		{'c', "Conservatory"},
-		{'.', "Hallway" }
-	};
+	std::vector<Room> rooms{};
+	Room* getRoom(const char&);
 
 	void DrawCharacters(float deltaTime);
 	void MoveCharacter(int& character, int x, int y);
@@ -63,7 +61,7 @@ public:
 	std::string weapon = "";
 	std::string GetMurderRoom();
 
-	MapView(std::vector<Suspect>& suspects);
-
 	int Display(float deltaTime);
+
+	MapView(std::vector<Suspect>& suspects, std::vector<Room>& roomNames);
 };

@@ -271,13 +271,10 @@ void Clue::DisplayInterview(float deltaTime)
 void Clue::DisplayIntroduction(float deltaTime)
 {
 	// FIXME: Use YAML to load what sprite this is 
-	SDLWrapper::DrawSprite("sprites/detectiveoffice.png", {});
+	SDLWrapper::DrawSprite(introScene.background, {});
 
-	SDLWrapper::DrawString("There's been a murder...", gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 }, sdl::WHITE);
+	SDLWrapper::DrawString(introScene.line, gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 }, sdl::WHITE);
 
-	static std::vector<std::string> answers{
-		"Okay.", "I'm on my way.", "I see...", "Not again!"
-	};
 	static QuestionObject continueFactor = { .text = "Response ", .pos = {100, (SDLWrapper::getScreenHeight() >> 1) + 50} };
 	continueFactor.Draw();
 
@@ -286,9 +283,9 @@ void Clue::DisplayIntroduction(float deltaTime)
 		gobl::vec2<int> pos = { 5, SDLWrapper::getScreenHeight() - 64 };
 		const int SPACING = 15 * 4;
 
-		for (int i = 0; i < answers.size(); i++)
+		for (int i = 0; i < introScene.response.size(); i++)
 		{
-			auto item = answers.at(i);
+			auto item = introScene.response.at(i);
 			bool mouseOver = SDLWrapper::getMouse().x < pos.x + SPACING + 12 && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().y < pos.y + 64 && SDLWrapper::getMouse().y > pos.y;
 
 			if (holdIndex == i)
@@ -322,7 +319,7 @@ void Clue::DisplayIntroduction(float deltaTime)
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (continueFactor.MouseOver()) continueFactor.answer = answers.at(holdIndex);
+			if (continueFactor.MouseOver()) continueFactor.answer = introScene.response.at(holdIndex);
 			holdIndex = -1;
 		}
 	}
@@ -389,9 +386,8 @@ bool Clue::OnUserUpdate(float deltaTime)
 
 Clue::Clue()
 {
-	LoadGenerics();
-	LoadSuspects();
-	LoadWeapons();
+	std::vector<Room> rooms{};
+	LoadData(rooms);
 
 	std::cout << "Shuffling..." << std::endl;
 	srand(static_cast<unsigned int>(time(NULL)));
@@ -402,6 +398,6 @@ Clue::Clue()
 
 	std::cout << "Picked killer and weapon. Begin game!" << std::endl;
 
-	mapView = new MapView(suspects);
+	mapView = new MapView(suspects, rooms);
 	mapView->weapon = weapons.at(weapon).name;
 }

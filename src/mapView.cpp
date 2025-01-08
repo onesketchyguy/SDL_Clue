@@ -1,23 +1,10 @@
 #include "mapView.hpp"
 #include "SDLWrapper.hpp"
 
-MapView::MapView(std::vector<Suspect>& suspects) : suspects(suspects)
+Room* MapView::getRoom(const char& n)
 {
-	player = 21 + (W * 8);
-	playerRoom = static_cast<char>(map[player]);
-
-	do
-	{
-		weaponRoom = static_cast<char>(map[rand() % (W * H)]);
-	} while (weaponRoom == '.');
-
-	do
-	{
-		murderRoom = static_cast<char>(map[rand() % (W * H)]);
-	} while (murderRoom == '.');
-
-	for (int i = 0; i < suspects.size(); i++) suspectPos.push_back(rand() % (W * H));
-	foundMurderRoom = false;
+	for (auto& r : rooms) if (r.index == n) return &r;
+	return nullptr;
 }
 
 void MapView::DrawCharacters(float deltaTime)
@@ -93,47 +80,64 @@ void MapView::MoveCharacter(int& character, int x, int y)
 
 int MapView::Display(float deltaTime)
 {
+	static gobl::vec2i lastInput = {};
 	interviewing = -1;
 	auto& input = SDLWrapper::getKeyboard();
 
-	if (input.bDown(SDLK_LEFT)) MoveCharacter(player, -1, 0);
-	if (input.bDown(SDLK_RIGHT)) MoveCharacter(player, 1, 0);
-	if (input.bDown(SDLK_UP)) MoveCharacter(player, 0, -1);
-	if (input.bDown(SDLK_DOWN)) MoveCharacter(player, 0, 1);
-
-	playerRoom = static_cast<char>(map[player]);
-	for (int x = 0; x < W; x++)
+	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 0)
 	{
-		for (int y = 0; y < H; y++)
+		SDLWrapper::DrawSprite(getRoom(playerRoom)->sprite, {});
+		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE))
 		{
-			SDL_Color tileCol = sdl::VERY_DARK_MAGENTA;
-			const int index = y * W + x;
-
-			switch (map[index])
-			{
-			case 's': tileCol = sdl::VERY_DARK_GREEN; break;
-			case 'h': tileCol = sdl::DARK_YELLOW; break;
-			case 'l': tileCol = sdl::DARK_GREY; break;
-			case 'b': tileCol = sdl::VERY_DARK_BLUE; break;
-			case 'f': tileCol = sdl::VERY_DARK_YELLOW; break;
-			case 'p': tileCol = sdl::DARK_RED; break;
-			case 'd': tileCol = sdl::VERY_DARK_RED; break;
-			case 'k': tileCol = sdl::DARK_GREEN; break;
-			case 'c': tileCol = sdl::DARK_BLUE; break;
-			}
-
-			if (map[index] != playerRoom && playerRoom != '.')
-			{
-				tileCol = sdl::VERY_DARK_MAGENTA;
-			}
-			if (playerRoom == '.' && map[index] != '.') tileCol = sdl::VERY_DARK_GREY;
-
-			SDLWrapper::DrawRect(x * MAP_SCALE, y * MAP_SCALE, MAP_SCALE, MAP_SCALE, tileCol);
+			MoveCharacter(player, -lastInput.x, -lastInput.y);
 		}
 	}
+	else
+	{
+		// TODO: Move player movement over to clicking on a map
+		if (input.bDown(SDLK_LEFT)) lastInput.x = -1;
+		if (input.bDown(SDLK_RIGHT)) lastInput.x = 1;
+		if (input.bDown(SDLK_UP)) lastInput.y = -1;
+		if (input.bDown(SDLK_DOWN)) lastInput.y = 1;
+		MoveCharacter(player, lastInput.x, lastInput.y);
 
-	DrawCharacters(deltaTime);
-	SDLWrapper::DrawString(roomNames[playerRoom], gobl::vec2<int>{ 10, (int)SDLWrapper::getScreenHeight() - 8 });
+		for (int x = 0; x < W; x++)
+		{
+			for (int y = 0; y < H; y++)
+			{
+				SDL_Color tileCol = sdl::VERY_DARK_MAGENTA;
+				const int index = y * W + x;
+
+				switch (map[index])
+				{
+				case 's': tileCol = sdl::VERY_DARK_GREEN; break;
+				case 'h': tileCol = sdl::DARK_YELLOW; break;
+				case 'l': tileCol = sdl::DARK_GREY; break;
+				case 'b': tileCol = sdl::VERY_DARK_BLUE; break;
+				case 'f': tileCol = sdl::VERY_DARK_YELLOW; break;
+				case 'p': tileCol = sdl::DARK_RED; break;
+				case 'd': tileCol = sdl::VERY_DARK_RED; break;
+				case 'k': tileCol = sdl::DARK_GREEN; break;
+				case 'c': tileCol = sdl::DARK_BLUE; break;
+				}
+
+				if (map[index] != playerRoom && playerRoom != '.')
+				{
+					tileCol = sdl::VERY_DARK_MAGENTA;
+				}
+				if (playerRoom == '.' && map[index] != '.') tileCol = sdl::VERY_DARK_GREY;
+
+				SDLWrapper::DrawRect(x * MAP_SCALE, y * MAP_SCALE, MAP_SCALE, MAP_SCALE, tileCol);
+			}
+		}
+
+		DrawCharacters(deltaTime); // This only draws minis
+		SDLWrapper::DrawString(getRoom(playerRoom)->name, gobl::vec2<int>{ 10, (int)SDLWrapper::getScreenHeight() - 8 });
+	}
+
+	// Update player location
+	playerRoom = static_cast<char>(map[player]);
+	if (getRoom(playerRoom)->index == '.') lastInput = {};
 
 	const float MOVE_TIME = 1.0f;
 	static float moveTimer = 0;
@@ -155,5 +159,24 @@ int MapView::Display(float deltaTime)
 
 std::string MapView::GetMurderRoom()
 {
-	return foundMurderRoom ? roomNames[murderRoom] : "???";
+	return foundMurderRoom ? rooms[murderRoom].name : "???";
+}
+
+MapView::MapView(std::vector<Suspect>& suspects, std::vector<Room>& rooms) : suspects(suspects), rooms(rooms)
+{
+	player = 21 + (W * 8);
+	playerRoom = static_cast<char>(map[player]);
+
+	do
+	{
+		weaponRoom = static_cast<char>(map[rand() % (W * H)]);
+	} while (weaponRoom == '.');
+
+	do
+	{
+		murderRoom = static_cast<char>(map[rand() % (W * H)]);
+	} while (murderRoom == '.');
+
+	for (int i = 0; i < suspects.size(); i++) suspectPos.push_back(rand() % (W * H));
+	foundMurderRoom = false;
 }

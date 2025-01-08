@@ -1,0 +1,7 @@
+bgSprite: "sprites/detectiveoffice.png"
+speakerLine: "There's been a murder..."
+responses:
+  - "Alrighty then."
+  - "I'm on my way!"
+  - "I see..."
+  - "Not again!"
