@@ -6,7 +6,8 @@ class QuestionObject
 public:
 	std::string text;
 	std::string answer;
-	gobl::vec2<int> pos;
+	gobl::vec2i pos;
+	gobl::vec2i rect;
 	void Draw();
-	bool MouseOver();
+	bool mouseOver();
 };

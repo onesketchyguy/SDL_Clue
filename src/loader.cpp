@@ -43,7 +43,7 @@ void Clue::LoadSuspects()
 	suspectSprite.Load(sprName, sprWidth, sprHeight, sprCols, sprRows);
 	std::cout << "Done loading suspects. Creating cards." << std::endl;
 
-	for (int i = 0; i < suspectNames.size(); i++) suspects.push_back(Suspect{ suspectNames.at(i), suspectSprite, i, suspectMotives.at(i) });
+	for (int i = 0; i < suspectNames.size(); i++) suspects.push_back(Suspect{ suspectNames.at(i), suspectSprite, i, suspectMotives.at(i), Clue::SUSPECT });
 }
 
 void Clue::LoadWeapons()
@@ -75,7 +75,7 @@ void Clue::LoadWeapons()
 	weaponSprite.Load(sprName, sprWidth, sprHeight, sprCols, sprRows);
 	std::cout << "Done loading weapons. Creating cards." << std::endl;
 
-	for (int i = 0; i < names.size(); i++) weapons.push_back({ names.at(i), weaponSprite, i });
+	for (int i = 0; i < names.size(); i++) weapons.push_back({ names.at(i), weaponSprite, i, Clue::WEAPON });
 }
 
 std::vector<Room> Clue::LoadRooms()
@@ -103,10 +103,9 @@ std::vector<Room> Clue::LoadRooms()
 				}
 				if ((*o).second["char"].Type() != 0)
 				{
-					data.push_back(Room{.index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite});
+					data.push_back(Room{ .index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite });
 				}
 				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map
-				
 			}
 		}
 	}
@@ -148,8 +147,8 @@ void Clue::LoadData(std::vector<Room>& rooms)
 	LoadWeapons();
 	rooms = LoadRooms();
 
-    // TODO: Load the player using yaml
-    SDLWrapper::LoadSprite("sprites/player.png");
+	// TODO: Load the player using yaml
+	SDLWrapper::LoadSprite("sprites/player.png");
 
-    // TODO: Load sounds
+	// TODO: Load sounds
 }

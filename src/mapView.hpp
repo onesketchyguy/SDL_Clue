@@ -1,9 +1,8 @@
 #pragma once
-#include "portal.h"
 #include "suspect.hpp"
 #include <iostream>
 
-struct Room 
+struct Room
 {
 	char index;
 	std::string name;

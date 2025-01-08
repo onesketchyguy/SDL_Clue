@@ -27,9 +27,9 @@ class Clue
 	};
 
 	SpriteData suspectSprite;
-	std::vector<Suspect> suspects{};
-
 	SpriteData weaponSprite;
+
+	std::vector<Suspect> suspects{};
 	std::vector<Card> weapons{};
 
 	int killer = 0, weapon = 0, interviewing = 0;

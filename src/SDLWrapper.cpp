@@ -7,7 +7,13 @@
 #include <vector>
 SDLWrapper* SDLWrapper::instance = nullptr;
 
-const char* ONE_FONT_PATH = "fonts/Deutsch.ttf"; // FIXME: Move this over to a list of fonts
+const std::string SDLWrapper::DEFAULT_FONT = "fonts/Deutsch.ttf";
+
+struct Font
+{
+	TTF_Font* ttf;
+	uint8_t size;
+};
 
 // MARK: Sprite def
 class Renderable
@@ -69,8 +75,9 @@ public:
 	int GetTypeID() override { return TEXT; }
 
 	const std::string& getString() { return text; }
+	Font* font;
 
-	Text(std::string t, int x, int y, SDL_Color col) : text(t), Renderable(x, y, 0, 0, col, false) {}
+	Text(std::string t, int x, int y, SDL_Color col, Font* f) : text(t), font(f), Renderable(x, y, 0, 0, col, false) {}
 };
 
 // MARK: This pass
@@ -92,7 +99,12 @@ SDLWrapper::~SDLWrapper()
 	//Destroy window
 	SDL_DestroyWindow(getType<SDL_Window>("window"));
 
-	TTF_CloseFont(getType<TTF_Font>(ONE_FONT_PATH));
+	for (auto& i : fonts)
+	{
+		Font* f = static_cast<Font*>(i.second);
+		TTF_CloseFont(f->ttf);
+	}
+
 	TTF_Quit();
 
 	//Quit SDL subsystems
@@ -146,10 +158,6 @@ int SDLWrapper::InitSDL(const char* appName)
 		printf("Couldn't initialize SDL TTF: %s\n", SDL_GetError());
 		return 4; // 4: Indicates a failture with the fonts module
 	}
-
-	int FONT_SIZE = 16;
-	TTF_Font* curFont = TTF_OpenFont(ONE_FONT_PATH, FONT_SIZE);
-	SetType(ONE_FONT_PATH, curFont);
 
 	return 0;
 }
@@ -263,16 +271,16 @@ bool SDLWrapper::Update()
 		else if (o->GetTypeID() == Renderable::TEXT)
 		{
 			Text* text = dynamic_cast<Text*>(o);
-			SDL_Surface* surface = TTF_RenderUTF8_Blended(getType<TTF_Font>(ONE_FONT_PATH), text->getString().c_str(), text->color);
+			SDL_Surface* surface = TTF_RenderUTF8_Blended(text->font->ttf, text->getString().c_str(), text->color);
 			SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 			SDL_FreeSurface(surface); // Cleanup the "surface" object
 
 			SDL_QueryTexture(texture, NULL, NULL, &text->dest.w, &text->dest.h);
-			text->dest.y -= text->dest.h >> 1; // FIXME: We don't need to do this, make the user do it
 			SDL_RenderCopy(renderer, texture, NULL, &text->dest);
 			SDL_DestroyTexture(texture); // We DO need to destroy this texture because it's been created this frame
 		}
 
+		// Clean up the pointer to the renderable
 		delete o;
 	}
 
@@ -344,9 +352,19 @@ void SDLWrapper::OutlineCircle(int x, int y, float rad, unsigned char r, unsigne
 	renderables.push_back(new Circle(x, y, rad, { r, g, b, a }, false));
 }
 
-void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color col)
+void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color col, const uint8_t& fontSize, const std::string& font)
 {
-	renderables.push_back(new Text(str, pos.x, pos.y, col));
+	const std::string fontName = str + std::to_string(fontSize);
+	if (instance->fonts.count(fontName) <= 0)
+	{
+		Font* curFont = new Font{
+			.ttf = TTF_OpenFont(font.c_str(), fontSize),
+			.size = fontSize
+		};
+		instance->fonts.emplace(fontName, curFont);
+	}
+
+	renderables.push_back(new Text(str, pos.x, pos.y, col, static_cast<Font*>(instance->fonts.at(fontName))));
 }
 
 void SDLWrapper::DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color col)
