@@ -1,7 +1,7 @@
 clear
 echo Compiling project....
 cd build
-cmake -G "Unix Makefiles" . --config Release --parallel
+cmake -G "Unix Makefiles" .
 make && 
 (
     cd ../
