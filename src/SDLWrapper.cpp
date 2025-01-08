@@ -9,12 +9,6 @@ SDLWrapper* SDLWrapper::instance = nullptr;
 
 const std::string SDLWrapper::DEFAULT_FONT = "fonts/Deutsch.ttf";
 
-struct Font
-{
-	TTF_Font* ttf;
-	uint8_t size;
-};
-
 // MARK: Sprite def
 class Renderable
 {
@@ -70,14 +64,16 @@ public:
 class Text : public Renderable
 {
 private:
-	std::string text;
+	std::string text, font;
+	uint8_t fontSize;
 public:
 	int GetTypeID() override { return TEXT; }
 
 	const std::string& getString() { return text; }
-	Font* font;
+	const std::string& getFont() { return font; }
+	const uint8_t& getFontSize() { return fontSize; }
 
-	Text(std::string t, int x, int y, SDL_Color col, Font* f) : text(t), font(f), Renderable(x, y, 0, 0, col, false) {}
+	Text(std::string t, int x, int y, SDL_Color col, std::string f, uint8_t fSize) : text(t), font(f), fontSize(fSize), Renderable(x, y, 0, 0, col, false) {}
 };
 
 // MARK: This pass
@@ -101,8 +97,7 @@ SDLWrapper::~SDLWrapper()
 
 	for (auto& i : fonts)
 	{
-		Font* f = static_cast<Font*>(i.second);
-		TTF_CloseFont(f->ttf);
+		TTF_CloseFont(static_cast<TTF_Font*>(i.second));
 	}
 
 	TTF_Quit();
@@ -271,7 +266,10 @@ bool SDLWrapper::Update()
 		else if (o->GetTypeID() == Renderable::TEXT)
 		{
 			Text* text = dynamic_cast<Text*>(o);
-			SDL_Surface* surface = TTF_RenderUTF8_Blended(text->font->ttf, text->getString().c_str(), text->color);
+			TTF_Font* font = static_cast<TTF_Font*>(instance->fonts.at(text->getFont()));
+			TTF_SetFontSize(font, text->getFontSize());
+
+			SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text->getString().c_str(), text->color);
 			SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 			SDL_FreeSurface(surface); // Cleanup the "surface" object
 
@@ -354,17 +352,10 @@ void SDLWrapper::OutlineCircle(int x, int y, float rad, unsigned char r, unsigne
 
 void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color col, const uint8_t& fontSize, const std::string& font)
 {
-	const std::string fontName = str + std::to_string(fontSize);
-	if (instance->fonts.count(fontName) <= 0)
-	{
-		Font* curFont = new Font{
-			.ttf = TTF_OpenFont(font.c_str(), fontSize),
-			.size = fontSize
-		};
-		instance->fonts.emplace(fontName, curFont);
-	}
+	if (instance->fonts.count(font) <= 0)
+		instance->fonts.emplace(font, TTF_OpenFont(font.c_str(), fontSize));
 
-	renderables.push_back(new Text(str, pos.x, pos.y, col, static_cast<Font*>(instance->fonts.at(fontName))));
+	renderables.push_back(new Text(str, pos.x, pos.y, col, font, fontSize));
 }
 
 void SDLWrapper::DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color col)
