@@ -6,9 +6,9 @@
 
 int main(int argc, char* argv[])
 {
-	SDLWrapper* wrapper = new SDLWrapper{ "Clue", 800, 800};
+	SDLWrapper* wrapper = new SDLWrapper{ "The butler didn't do it", 800, 800};
 
-	Clue demo{};
+	Game demo{};
 	while (true)
 	{
 		if (!SDLWrapper::Update()) break;

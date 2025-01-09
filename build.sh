@@ -5,7 +5,7 @@ cmake -G "Unix Makefiles" .
 make && 
 (
     cd ../
-    ./Clue
+    ./the_butler_didnt_do_it
 ) ||
 (
     echo Ooops, something failed. See above.

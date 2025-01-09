@@ -1,0 +1,18 @@
+
+response: 
+  prompt: "What do you know about: "
+  secondStep: "suspect"
+  outcomes:
+    - "motive"
+    - "location"
+    - "misdirection"
+response: 
+  prompt: "Pertaining to the murder weapon..."
+  secondStep: "weapon"
+  outcomes:
+    - "location"
+    - "misdirection"
+response: 
+  prompt: "Nevermind..."
+  outcomes:
+    - "end"

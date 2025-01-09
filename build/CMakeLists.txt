@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(Clue)
+project(the_butler_didnt_do_it)
 enable_language(CXX)
 
 # Set the C standard
@@ -10,9 +10,6 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# Set the project name
-project(Clue)
 
 # Find OpenGL
 set(OpenGL_GL_PREFERENCE LEGACY) # Use the old version of OGL

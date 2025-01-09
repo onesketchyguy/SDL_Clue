@@ -16,12 +16,16 @@ struct StaticScene
 	std::vector<Card> response;
 };
 
-// Override base class with your custom functionality
-class Clue
+struct DynamicScene : public StaticScene
+{
+	std::map<int, std::vector<std::string>> outcomes;
+};
+
+class Game
 {
 public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
-	Clue();
+	Game();
 
 	bool OnUserUpdate(float deltaTime);
 private:
@@ -47,6 +51,7 @@ private:
 	void LoadWeapons();
 	std::vector<Room> LoadRooms();
 	void LoadIntroScene();
+	void LoadScene(std::string sceneName);
 	void LoadData(std::vector<Room>& rooms);
 
 	MapView* mapView = nullptr;

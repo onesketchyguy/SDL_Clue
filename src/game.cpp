@@ -2,7 +2,7 @@
 #include "SDLWrapper.hpp"
 
 template <typename T>
-gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Clue::HoldingType& holding, gobl::vec2i pos)
+gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& holding, gobl::vec2i pos)
 {
 	// Ensure T is derived from Card
 	static_assert(std::is_base_of<Card, T>::value, "T must be derived from Card");
@@ -30,7 +30,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Clue::HoldingType& 
 				if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
 				{
 					holdIndex = i;
-					holding = (Clue::HoldingType)item.type;
+					holding = (Game::HoldingType)item.type;
 				}
 
 				pos.y += 20;
@@ -45,7 +45,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Clue::HoldingType& 
 	return pos;
 }
 
-void Clue::DisplayAccusing()
+void Game::DisplayAccusing()
 {
 	static bool foundWhat = false;
 	static int accusing = -1;
@@ -92,7 +92,7 @@ void Clue::DisplayAccusing()
 	btn.Draw();
 }
 
-void Clue::DisplayKiller(bool foundKiller)
+void Game::DisplayKiller(bool foundKiller)
 {
 	gobl::vec2<int> killerPos = { 100, 100 };
 	gobl::vec2<int> weaponPos = { 100, 120 + suspectSprite.height };
@@ -132,7 +132,7 @@ void Clue::DisplayKiller(bool foundKiller)
 	SDLWrapper::DrawString("CASE GRADE: " + grade, gobl::vec2<int>{ SDLWrapper::getScreenWidth() - 220, SDLWrapper::getScreenHeight() - 36 }, sdl::BLACK);
 }
 
-void Clue::DisplayInterview(float deltaTime)
+void Game::DisplayInterview(float deltaTime)
 {
 	// FIXME: Move this over to cards
 	gobl::vec2<int> speachBubblePos = gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 };
@@ -221,7 +221,7 @@ void Clue::DisplayInterview(float deltaTime)
 	}
 }
 
-void Clue::DisplayIntroduction(float deltaTime)
+void Game::DisplayIntroduction(float deltaTime)
 {
 	SDLWrapper::DrawSprite(introScene.background);
 
@@ -253,7 +253,7 @@ void Clue::DisplayIntroduction(float deltaTime)
 	}
 }
 
-bool Clue::OnUserUpdate(float deltaTime)
+bool Game::OnUserUpdate(float deltaTime)
 {
 	// SDLWrapper::DrawString(std::to_string(deltaTime), { 0, 8 }, sdl::WHITE);
 
@@ -273,16 +273,16 @@ bool Clue::OnUserUpdate(float deltaTime)
 
 	switch (state)
 	{
-	case Clue::Introduction:
+	case Game::Introduction:
 		DisplayIntroduction(deltaTime);
 		break;
-	case Clue::Interviewing:
+	case Game::Interviewing:
 		DisplayInterview(deltaTime);
 		break;
-	case Clue::Accusing:
+	case Game::Accusing:
 		DisplayAccusing();
 		break;
-	case Clue::Investigating:
+	case Game::Investigating:
 		stateEvent = mapView->Display(deltaTime);
 		if (stateEvent == -1) state = Lose;
 		else if (stateEvent > 0)
@@ -291,10 +291,10 @@ bool Clue::OnUserUpdate(float deltaTime)
 			state = Interviewing;
 		}
 		break;
-	case Clue::Win:
+	case Game::Win:
 		DisplayKiller(true);
 		break;
-	case Clue::Lose:
+	case Game::Lose:
 		DisplayKiller(false);
 		break;
 	default:
@@ -304,7 +304,7 @@ bool Clue::OnUserUpdate(float deltaTime)
 	return true;
 }
 
-Clue::Clue()
+Game::Game()
 {
 	std::vector<Room> rooms{};
 	LoadData(rooms);
