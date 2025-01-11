@@ -19,6 +19,11 @@ struct StaticScene
 struct DynamicScene : public StaticScene
 {
 	std::map<int, std::vector<std::string>> outcomes;
+	std::vector<std::string> secondStep;
+	std::string speakerInitState = "";
+	std::string speakerState;
+	int outcomeState;
+	int finalState = -1;
 };
 
 class Game
@@ -46,6 +51,7 @@ private:
 	int killer = 0, weapon = 0, interviewing = 0;
 
 	StaticScene introScene{};
+	std::map<std::string, DynamicScene> scenes{};
 
 	void LoadSuspects();
 	void LoadWeapons();

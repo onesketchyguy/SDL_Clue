@@ -67,7 +67,7 @@ void MapView::DrawCharacters(float deltaTime)
 	}
 
 	// Draw player
-	SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px) * MAP_SCALE, float(py) * MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
+	SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px)* MAP_SCALE, float(py)* MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
 }
 
 void MapView::MoveCharacter(int& character, int x, int y)
@@ -132,12 +132,12 @@ int MapView::Display(float deltaTime)
 		}
 
 		DrawCharacters(deltaTime); // This only draws minis
-		SDLWrapper::DrawString(getRoom(playerRoom)->name, gobl::vec2<int>{ 10, (int)SDLWrapper::getScreenHeight() - 8 });
+		SDLWrapper::DrawString(getRoom(playerRoom)->name, gobl::vec2<int> { 10, (int)SDLWrapper::getScreenHeight() - 8 });
 	}
 
 	// Update player location
 	playerRoom = static_cast<char>(map[player]);
-	if (getRoom(playerRoom)->index == '.') lastInput = {};
+	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->index == '.') lastInput = {};
 
 	const float MOVE_TIME = 1.0f;
 	static float moveTimer = 0;

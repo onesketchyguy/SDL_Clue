@@ -14,7 +14,8 @@ class Renderable
 {
 public:
 	Renderable(int x, int y, int w, int h, SDL_Color col = { 255, 255, 255, 255 }, bool solid = true) :
-		dest{ x, y, w, h }, color(col), solid(solid) {}
+		dest{ x, y, w, h }, color(col), solid(solid) {
+	}
 
 	typedef enum { RECT, CIRCLE, LINE, SPRITE, TEXT } RenderableType;
 
@@ -31,7 +32,8 @@ private:
 	float radius;
 public:
 	Circle(int x, int y, float radius, SDL_Color col = { 255, 255, 255, 255 }, bool solid = true) :
-		Renderable(x, y, 0, 0, col, solid), radius(radius) {}
+		Renderable(x, y, 0, 0, col, solid), radius(radius) {
+	}
 
 	const float& getRadius() { return radius; }
 	int GetTypeID() override { return CIRCLE; }
@@ -41,7 +43,8 @@ class Line : public Renderable
 {
 public:
 	Line(float x1, float y1, float x2, float y2, SDL_Color col = { 255, 255, 255, 255 }) :
-		Renderable(static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2), col) {}
+		Renderable(static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2), col) {
+	}
 
 	int GetTypeID() override { return LINE; }
 };
@@ -58,7 +61,8 @@ public:
 	int GetTypeID() override { return SPRITE; }
 
 	Sprite(const std::string& path, int x, int y, int w, int h, int srcx, int srcy, int srcw, int srch, SDL_Color col = { 255, 255, 255, 255 }, bool solid = true) :
-		src{ srcx, srcy, srcw, srch }, pathID(path), Renderable(x, y, w, h, col, solid) {}
+		src{ srcx, srcy, srcw, srch }, pathID(path), Renderable(x, y, w, h, col, solid) {
+	}
 };
 
 class Text : public Renderable
@@ -161,19 +165,18 @@ bool SDLWrapper::Update()
 {
 	bool appRunning = true;
 
+	// Updated with gobl input method of bit shifting
 	for (int i = 1; i < 5; i++)
 	{
-		if (instance->mouse.getRaw(i - 1) == 1) instance->mouse.assert(i - 1, 2); // Held the button
-		if (instance->mouse.getRaw(i - 1) == 3) instance->mouse.assert(i - 1, 0); // Release the button
+		if ((instance->mouse.getRaw(i - 1) & 48) >> 5) instance->mouse.assert(i - 1, 0); // Set inputs that are being released to 0
+		if ((instance->mouse.getRaw(i - 1) & 12) >> 3) instance->mouse.assert(i - 1, 3); // Set inputs that are being pressed to held
 	}
 
-	for (auto& k : instance->keyboard.getAllRaw())
+	for (auto& key : instance->keyboard.getAllRaw())
 	{
-		if (k.second == 1) k.second = 2; // Held the button
-		if (k.second == 3) k.second = 0; // Release the button
+		if ((key.second & 48) >> 5) key.second = 0; // Set inputs that are being released to 0
+		if ((key.second & 12) >> 3) key.second = 3; // Set inputs that are being pressed to held
 	}
-
-	// for ()
 
 	//Handle events on queue
 	SDL_Event e;
@@ -192,19 +195,19 @@ bool SDLWrapper::Update()
 		}
 		else if (e.type == SDL_MOUSEBUTTONDOWN)
 		{
-			if (instance->mouse.getRaw(e.button.button - 1) != 2) instance->mouse.assert(e.button.button - 1, 1);
+			if (instance->mouse.bHeld(e.button.button - 1) == false) instance->mouse.assert(e.button.button - 1, 12);
 		}
 		else if (e.type == SDL_MOUSEBUTTONUP)
 		{
-			instance->mouse.assert(e.button.button - 1, 3);
+			instance->mouse.assert(e.button.button - 1, 48);
 		}
 		else if (e.type == SDL_KEYDOWN)
 		{
-			if (instance->mouse.getRaw(e.key.keysym.sym) != 2) instance->keyboard.assert(e.key.keysym.sym, 1);
+			if (instance->keyboard.bHeld(e.key.keysym.sym) == false) instance->keyboard.assert(e.key.keysym.sym, 12);
 		}
 		else if (e.type == SDL_KEYUP)
 		{
-			instance->keyboard.assert(e.key.keysym.sym, 3);
+			instance->keyboard.assert(e.key.keysym.sym, 48);
 		}
 	}
 

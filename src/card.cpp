@@ -50,3 +50,27 @@ void Card::Draw(gobl::vec2<int> pos)
 
 	SDLWrapper::DrawString(name, pos + gobl::vec2i{ 4, CARD_RECT.y - 20 }, sdl::BLACK, fontSize);
 }
+
+void Card::DrawZoomed(gobl::vec2<int> pos)
+{
+	gobl::vec2i bigRect = { CARD_RECT.x * 3, CARD_RECT.y * 3 };
+	SDLWrapper::DrawRect(pos.x, pos.y, bigRect.x, bigRect.y, sdl::GREY);
+	SDLWrapper::OutlineRect(pos.x, pos.y, bigRect.x, bigRect.y, sdl::BLACK);
+	SDLWrapper::OutlineRect(pos.x + 1, pos.y + 1, bigRect.x - 2, bigRect.y - 2, sdl::DARK_GREY);
+
+	int col = sprIndex % spriteData.cols;
+	int row = sprIndex / spriteData.cols;
+
+	SDLWrapper::DrawRect(pos.x + 10, pos.y + 10, bigRect.x - 20, bigRect.x - 20, sdl::LIGHT_GREY);
+	spriteData.Draw(col, row, pos + gobl::vec2i{ 10, 10 }, { bigRect.x - 20, bigRect.x - 20 });
+
+	int fontSize = 16;
+	int size = name.size() * (fontSize >> 1);
+	while (size >= bigRect.x)
+	{
+		fontSize--;
+		size = name.size() * (fontSize >> 1);
+	}
+
+	SDLWrapper::DrawString(name, pos + gobl::vec2i{ 4, bigRect.y - 20 }, sdl::BLACK, fontSize);
+}

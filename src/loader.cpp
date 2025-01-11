@@ -148,26 +148,35 @@ void Game::LoadIntroScene()
 
 void Game::LoadScene(std::string sceneName)
 {
-	std::cout << "Loading scene " << sceneName << "..." << std::endl;
+	std::string dir = "config/" + sceneName + ".yaml";
+	std::cout << "Loading scene " << dir << "..." << std::endl;
 
 	YAML::Node root;
-	YAML::Parse(root, "config/" + sceneName + ".yaml");
+	YAML::Parse(root, dir.c_str());
 	DynamicScene scene{};
 
 	std::string curResponse;
 	std::string secondStep;
 	std::vector<std::string> outcomes{};
 
-	auto commit = [&]()
-	{
-		scene.outcomes.emplace(scene.response.size(), outcomes);
-		scene.response.push_back(Card{ curResponse, responseSprite, 0, Game::NONE });
-		outcomes.clear();
-	};
+	if (root["speaker"].Type() != 0) scene.speakerInitState = root["speaker"].As<std::string>();
+	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse speaker!" << std::endl;
 
-	for (auto it = root.Begin(); it != root.End(); it++)
+	// Load responses
+	auto commit = [&]()
+		{
+			scene.outcomes.emplace(scene.response.size(), outcomes);
+			scene.response.push_back(Card{ curResponse, responseSprite, 0, Game::NONE });
+			scene.secondStep.push_back(secondStep);
+			// std::cout << "Commiting response " << curResponse << " with " << std::to_string(outcomes.size()) << " outcomes" << std::endl;
+			outcomes.clear();
+			curResponse.clear();
+			secondStep.clear();
+		};
+
+	if (root["responses"].Type() != 0)
 	{
-		if ((*it).first == "response")
+		for (auto it = root["responses"].Begin(); it != root["responses"].End(); it++)
 		{
 			if (outcomes.size() > 0) commit();
 			curResponse = (*it).second["prompt"].As<std::string>();
@@ -180,9 +189,10 @@ void Game::LoadScene(std::string sceneName)
 				}
 			}
 		}
+		commit();
+		scenes.emplace(sceneName, scene);
 	}
-
-	commit();
+	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse responses!" << std::endl;
 }
 
 void Game::LoadData(std::vector<Room>& rooms)
@@ -191,8 +201,7 @@ void Game::LoadData(std::vector<Room>& rooms)
 	LoadWeapons();
 	rooms = LoadRooms();
 	LoadIntroScene();
-
-	// LoadScene("conversation"); // FIXME: This isn't currently working
+	LoadScene("conversation");
 
 	// TODO: Load the player using yaml
 	SDLWrapper::LoadSprite("sprites/player.png");

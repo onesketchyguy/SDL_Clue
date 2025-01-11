@@ -1,18 +1,18 @@
-
-response: 
-  prompt: "What do you know about: "
-  secondStep: "suspect"
-  outcomes:
-    - "motive"
-    - "location"
-    - "misdirection"
-response: 
-  prompt: "Pertaining to the murder weapon..."
-  secondStep: "weapon"
-  outcomes:
-    - "location"
-    - "misdirection"
-response: 
-  prompt: "Nevermind..."
-  outcomes:
-    - "end"
+speaker: How can I help you detective?
+responses: 
+  - prompt: "What do you know about: "
+    secondStep: "suspect"
+    outcomes:
+      - "motive"
+      - "suspectMisdirect"
+  - prompt: "Pertaining to the murder weapon..."
+    secondStep: "weapon"
+    outcomes:
+      - "weapon"
+      - "weaponMisdirect"
+  - prompt: "You are under arrest!"
+    outcomes:
+      - "accuse"
+  - prompt: "Nevermind..."
+    outcomes:
+      - "end"

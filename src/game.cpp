@@ -13,7 +13,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 		auto item = cards.at(i);
 		bool mouseOver = item.mouseOver(pos);
 
-		if (holdIndex == i)
+		if (holdIndex == i && holding == (Game::HoldingType)cards.at(0).type)
 		{
 			item.Draw(SDLWrapper::getMousePos() + gobl::vec2<int>{ 0, -16 });
 
@@ -27,10 +27,18 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 
 			if (mouseOver)
 			{
-				if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
+				if (SDLWrapper::getKeyboard().bHeld(SDLK_LALT))
+				{
+					item.DrawZoomed({ 0, 0 });
+				}
+				else if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
 				{
 					holdIndex = i;
 					holding = (Game::HoldingType)item.type;
+				}
+				else
+				{
+					SDLWrapper::DrawString("hold " + std::string(SDL_GetKeyName(SDLK_LALT)) + " to magnify", { pos.x, pos.y - 16 }, sdl::BLACK, 12);
 				}
 
 				pos.y += 20;
@@ -74,7 +82,6 @@ void Game::DisplayAccusing()
 
 	gobl::vec2i pos = DrawCards(weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 	DrawCards(suspects, holdIndex, holding, pos);
-
 	if (SDLWrapper::getMouse().bRelease(0))
 	{
 		holdIndex = -1;
@@ -134,90 +141,109 @@ void Game::DisplayKiller(bool foundKiller)
 
 void Game::DisplayInterview(float deltaTime)
 {
-	// FIXME: Move this over to cards
+	auto& curScene = scenes.at("conversation"); // FIXME: Use a dynamic name instead of "conversation"
 	gobl::vec2<int> speachBubblePos = gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 };
 	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - suspectSprite.height };
 
 	suspects.at(interviewing).Draw(suspectPos);
 	SDLWrapper::DrawString(suspects.at(interviewing).name, suspectPos + gobl::vec2<int>{ 0, suspectSprite.height }, sdl::BLACK);
 	speachBubblePos.y += 25;
-	SDLWrapper::DrawString("How can I help you detective?", speachBubblePos, sdl::WHITE);
+	SDLWrapper::DrawString(curScene.speakerState, speachBubblePos, sdl::WHITE);
 	speachBubblePos.y += 25;
 
-	static std::vector<std::string> answers{
-		"Why would you have killed Mr. Boddy?", "Nevermind..."
-	};
 	static QuestionObject responseBox = { .text = "Response ", .pos = gobl::vec2<int>{speachBubblePos.x + 100, speachBubblePos.y + 25} };
 	responseBox.Draw();
 
 	if (responseBox.answer.size() < 2)
 	{
-		gobl::vec2<int> pos = { 5, SDLWrapper::getScreenHeight() - 64 };
-		const int SPACING = 15 * 4;
+		DrawCards(curScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
-		for (int i = 0; i < answers.size(); i++)
+		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			auto item = answers.at(i);
-			bool mouseOver = SDLWrapper::getMouse().x < pos.x + SPACING + 12 && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().y < pos.y + 64 && SDLWrapper::getMouse().y > pos.y;
+			if (responseBox.mouseOver()) responseBox.answer = scenes.at("conversation").response.at(holdIndex).name;
 
-			if (holdIndex == i) // FIXME: Make some cards for these guys
-			{
-				//sdl::CardRect(SDLWrapper::getMousePos(), { SPACING + 12, 64 }, sdl::DARK_GREY);
-				SDLWrapper::DrawString(item, SDLWrapper::getMousePos() + gobl::vec2<int>{ 0, 16 }, sdl::BLACK);
+			curScene.outcomeState = holdIndex;
 
-				if (SDLWrapper::getMouse().y > pos.y - 20) pos.x += (SPACING * 2) + 10;
-			}
-			else
-			{
-				if (mouseOver) pos.y -= 10;
-
-				//sdl::CardRect(pos, { SPACING + 12, 64 }, sdl::DARK_GREY);
-				SDLWrapper::DrawString(item, pos + gobl::vec2<int>{ 0, 16 }, sdl::BLACK);
-
-				if (mouseOver)
-				{
-					if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
-					{
-						holdIndex = i;
-					}
-
-					pos.y += 10;
-					pos.x += SPACING + 10;
-				}
-
-				pos.x += SPACING;
-			}
-		}
-
-		if (SDLWrapper::getMouse().bRelease(0))
-		{
-			if (responseBox.mouseOver()) responseBox.answer = answers.at(holdIndex);
 			holdIndex = -1;
 		}
 	}
 	else
 	{
-		if (responseBox.answer == answers.back())
+		// Don't handle outcomes until AFTER we've determined if there's a second step
+		if (curScene.secondStep.at(curScene.outcomeState).size() > 1 && curScene.finalState == -1)
 		{
-			state = Investigating;
-			responseBox.answer = "";
-			return;
+			if (curScene.finalState == -1)
+			{
+				if (curScene.secondStep.at(curScene.outcomeState) == "weapon")
+				{
+					DrawCards(weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+
+					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
+					{
+						if (responseBox.mouseOver()) responseBox.answer = weapons.at(holdIndex).name;
+						curScene.finalState = holdIndex;
+
+						holdIndex = -1;
+					}
+				}
+				else if (curScene.secondStep.at(curScene.outcomeState) == "suspect")
+				{
+					DrawCards(suspects, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+
+					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
+					{
+						if (responseBox.mouseOver()) responseBox.answer = weapons.at(holdIndex).name;
+						curScene.finalState = holdIndex;
+
+						holdIndex = -1;
+					}
+				}
+			}
 		}
+		else
+		{
+			const auto& outcomes = curScene.outcomes.at(curScene.outcomeState);
+			for (int o = 0; o < outcomes.size(); o++)
+			{
+				if (outcomes.at(o) == "motive" && interviewing != killer)
+				{
+					curScene.speakerState = "I heard that they're motive would be " + suspects.at(curScene.finalState).GetMotive();
+					suspects.at(curScene.finalState).foundMotive = true;
+				}
 
-		SDLWrapper::DrawString("I suppose it would be " + suspects.at(interviewing).GetMotive(), speachBubblePos, sdl::BLACK); // FIXME: Do an actual minigame with the interview
-		suspects.at(interviewing).foundMotive = true;
+				if (outcomes.at(o) == "suspectMisdirect" && interviewing == killer)
+				{
+					curScene.speakerState = "I think I saw the butler...";
+				}
 
-		static Button jaccuse = { .onClick = [&]() {
-			state = Accusing;
+				if (outcomes.at(o) == "weaponMisdirect" && interviewing == killer)
+				{
+					if (weapon != curScene.finalState) curScene.speakerState = "I'm pretty sure I saw someone with a " + weapons.at(curScene.finalState).name + " impression on their head...";
+					else curScene.speakerState = "I saw a shadowy figure walking with the " + weapons.at(rand() % weapons.size()).name;
+				}
+
+				if (outcomes.at(o) == "weapon" && interviewing != killer)
+				{
+					if (weapon == curScene.finalState) curScene.speakerState = "I mean it's got blood all over it.";
+					else curScene.speakerState = "I've never seen that before in my life";
+				}
+
+				if (outcomes.at(o) == "accuse")
+				{
+					curScene.speakerState = curScene.speakerInitState;
+					state = Accusing;
+				}
+
+				if (outcomes.at(o) == "end")
+				{
+					curScene.speakerState = curScene.speakerInitState;
+					state = Investigating;
+				}
+			}
+
+			curScene.finalState = -1;
 			responseBox.answer = "";
-		}, .text = "Accuse", .pos = { SDLWrapper::getScreenWidth() - 100, SDLWrapper::getScreenHeight() - 50} };
-		jaccuse.Draw();
-
-		static Button btn = { .onClick = [&]() {
-			state = Investigating;
-			responseBox.answer = "";
-		}, .text = "Done", .pos = { SDLWrapper::getScreenWidth() - 100, SDLWrapper::getScreenHeight() - 25} };
-		btn.Draw();
+		}
 	}
 }
 
@@ -255,8 +281,6 @@ void Game::DisplayIntroduction(float deltaTime)
 
 bool Game::OnUserUpdate(float deltaTime)
 {
-	// SDLWrapper::DrawString(std::to_string(deltaTime), { 0, 8 }, sdl::WHITE);
-
 	if (SDLWrapper::getKeyboard().bDown(SDLK_TAB))
 	{
 		if (state == Investigating) state = Accusing;

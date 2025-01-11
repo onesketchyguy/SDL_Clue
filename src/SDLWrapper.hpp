@@ -51,10 +51,10 @@ namespace sdl
 		WHITE(255, 255, 255, 255), BLACK(0, 0, 0, 255), BLANK(0, 0, 0, 0);
 }
 
-struct ButtonInterface
+struct ButtonInterface // Updated with gobl input method of bit shifting
 {
 private:
-	std::map<int, int> btns{ };
+	std::map<int, char> btns{ };
 
 public:
 	void assert(int i, int j)
@@ -69,32 +69,32 @@ public:
 		return btns.at(i);
 	}
 
-	std::map<int, int>& getAllRaw()
+	std::map<int, char>& getAllRaw()
 	{
 		return btns;
 	}
 
 	bool bDown(int i)
 	{
-		if (btns.count(i) > 0) return btns.at(i) == 1;
+		if (btns.count(i) > 0) return (btns.at(i) & 12) >> 3;
 		else return 0;
 	}
 
 	bool bHeld(int i)
 	{
-		if (btns.count(i) > 0) return btns.at(i) == 2;
+		if (btns.count(i) > 0) return (btns.at(i) & 3) >> 1;
 		else return 0;
 	}
 
 	bool bRelease(int i)
 	{
-		if (btns.count(i) > 0) return btns.at(i) == 3;
+		if (btns.count(i) > 0) return (btns.at(i) & 48) >> 5;
 		else return 0;
 	}
 
 	bool bAny(int i)
 	{
-		if (btns.count(i) > 0) return btns.at(i) > 0;
+		if (btns.count(i) > 0) return (btns[i] & 63) > 0;
 		else return 0;
 	}
 };
