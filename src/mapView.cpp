@@ -23,9 +23,12 @@ void MapView::DrawCharacters(float deltaTime)
 		const int x = suspectPos[i] % W;
 		const int y = suspectPos[i] / W;
 
-		suspects[i].DrawMini(gobl::vec2<float>{ (x + 0.5f)* MAP_SCALE, (y + 0.5f)* MAP_SCALE }, MAP_SCALE);
+		//suspects[i].DrawMini(gobl::vec2<float>{ (x + 0.5f)* MAP_SCALE, (y + 0.5f)* MAP_SCALE }, MAP_SCALE);
 
-		if (SDLWrapper::getMouse().y > y * MAP_SCALE && SDLWrapper::getMouse().y < (y + 1.5f) * MAP_SCALE && SDLWrapper::getMouse().x > x * MAP_SCALE && SDLWrapper::getMouse().x < (x + 1.5f) * MAP_SCALE)
+		suspects[i].DrawMini(gobl::vec2f{x * MAP_SCALE, SDLWrapper::getScreenHeight() - 200}, 100);
+
+		if (SDLWrapper::getMouse().y > SDLWrapper::getScreenHeight() - 200 && SDLWrapper::getMouse().y < SDLWrapper::getScreenHeight() - 150 && 
+			SDLWrapper::getMouse().x > x && SDLWrapper::getMouse().x < (x + 1.0f) * 100)
 		{
 			mouseTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;
@@ -38,13 +41,13 @@ void MapView::DrawCharacters(float deltaTime)
 	if (mouseTip.size() > 0)
 	{
 		int my = SDLWrapper::getMouse().y - 12;
-		SDLWrapper::DrawString(mouseTip, { SDLWrapper::getMouse().x, my }, sdl::WHITE);
+		SDLWrapper::DrawString(mouseTip, { SDLWrapper::getMouse().x, my }, sdl::BLACK);
 	}
 
 	if (peopleInRoom == 1 && killerInRoom)
 	{
 		const float MAX_TIMER = 10.0f;
-		SDLWrapper::DrawString("They're being shifty..." + std::to_string(int(ceil(MAX_TIMER - timer))), { 50, 10 }, sdl::WHITE); // FIXME: Don't tell the player this is the killer
+		SDLWrapper::DrawString("They're being shifty..." + std::to_string(int(ceil(MAX_TIMER - timer))), { 50, 10 }, sdl::BLACK); // FIXME: Don't tell the player this is the killer
 		timer += deltaTime;
 
 		if (timer >= MAX_TIMER) playerKilled = true;
@@ -53,21 +56,21 @@ void MapView::DrawCharacters(float deltaTime)
 
 	if (weaponRoom == playerRoom && weaponRoom != murderRoom)
 	{
-		SDLWrapper::DrawString("This must be the weapon... The " + weapon, { px, py }, sdl::WHITE); // FIXME: Don't tell the player this is the weapon
+		SDLWrapper::DrawString("This must be the weapon... The " + weapon, { px, py }, sdl::BLACK); // FIXME: Don't tell the player this is the weapon
 	}
 	else if (murderRoom == playerRoom && weaponRoom != murderRoom)
 	{
-		SDLWrapper::DrawString("This must be where the victem was killed...", { px, py }, sdl::WHITE);
+		SDLWrapper::DrawString("This must be where the victem was killed...", { px, py }, sdl::BLACK);
 		foundMurderRoom = true;
 	}
 	else if (murderRoom == playerRoom && weaponRoom == murderRoom)
 	{
-		SDLWrapper::DrawString("The victem was kill here with the " + weapon, { px, py }, sdl::WHITE);
+		SDLWrapper::DrawString("The victem was kill here with the " + weapon, { px, py }, sdl::BLACK);
 		foundMurderRoom = true;
 	}
 
 	// Draw player
-	SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px)* MAP_SCALE, float(py)* MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
+	// SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px)* MAP_SCALE, float(py)* MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
 }
 
 void MapView::MoveCharacter(int& character, int x, int y)
@@ -84,60 +87,42 @@ int MapView::Display(float deltaTime)
 	interviewing = -1;
 	auto& input = SDLWrapper::getKeyboard();
 
-	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 0)
+	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 0) // FIXME: draw all the characters that are in the current room
 	{
 		SDLWrapper::DrawSprite(getRoom(playerRoom)->sprite, {});
 		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE))
 		{
-			MoveCharacter(player, -lastInput.x, -lastInput.y);
+			playerRoom = '.';
 		}
+
+		DrawCharacters(deltaTime);
 	}
 	else
 	{
-		// TODO: Move player movement over to clicking on a map
-		if (input.bDown(SDLK_LEFT)) lastInput.x = -1;
-		if (input.bDown(SDLK_RIGHT)) lastInput.x = 1;
-		if (input.bDown(SDLK_UP)) lastInput.y = -1;
-		if (input.bDown(SDLK_DOWN)) lastInput.y = 1;
-		MoveCharacter(player, lastInput.x, lastInput.y);
+		SDL_ShowCursor(SDL_DISABLE);
+		SDLWrapper::DrawSprite("sprites/mapScreen.png");
 
-		for (int x = 0; x < W; x++)
+		int y = 200;
+		for (auto& r : rooms)
 		{
-			for (int y = 0; y < H; y++)
+			if (r.name == "Hallway") continue;
+			SDL_Color col = sdl::BLACK;
+
+			if (SDLWrapper::getMouse().x > 200 && SDLWrapper::getMouse().x < 600 && SDLWrapper::getMouse().y >= y && SDLWrapper::getMouse().y <= y + 50)
 			{
-				SDL_Color tileCol = sdl::VERY_DARK_MAGENTA;
-				const int index = y * W + x;
+				col = sdl::DARK_GREY;
 
-				switch (map[index])
+				if (SDLWrapper::getMouse().bRelease(0))
 				{
-				case 's': tileCol = sdl::VERY_DARK_GREEN; break;
-				case 'h': tileCol = sdl::DARK_YELLOW; break;
-				case 'l': tileCol = sdl::DARK_GREY; break;
-				case 'b': tileCol = sdl::VERY_DARK_BLUE; break;
-				case 'f': tileCol = sdl::VERY_DARK_YELLOW; break;
-				case 'p': tileCol = sdl::DARK_RED; break;
-				case 'd': tileCol = sdl::VERY_DARK_RED; break;
-				case 'k': tileCol = sdl::DARK_GREEN; break;
-				case 'c': tileCol = sdl::DARK_BLUE; break;
+					playerRoom = r.index; // Transport the player to that room
 				}
-
-				if (map[index] != playerRoom && playerRoom != '.')
-				{
-					tileCol = sdl::VERY_DARK_MAGENTA;
-				}
-				if (playerRoom == '.' && map[index] != '.') tileCol = sdl::VERY_DARK_GREY;
-
-				SDLWrapper::DrawRect(x * MAP_SCALE, y * MAP_SCALE, MAP_SCALE, MAP_SCALE, tileCol);
 			}
+			SDLWrapper::DrawString(r.name, {200, y}, col, 32);
+			y += 50;
 		}
 
-		DrawCharacters(deltaTime); // This only draws minis
-		SDLWrapper::DrawString(getRoom(playerRoom)->name, gobl::vec2<int> { 10, (int)SDLWrapper::getScreenHeight() - 8 });
+		SDLWrapper::DrawSprite("sprites/mapScreenPen.png", gobl::vec2f{ SDLWrapper::getMouse().x-20,  SDLWrapper::getMouse().y-40 });
 	}
-
-	// Update player location
-	playerRoom = static_cast<char>(map[player]);
-	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->index == '.') lastInput = {};
 
 	const float MOVE_TIME = 1.0f;
 	static float moveTimer = 0;
@@ -164,6 +149,9 @@ std::string MapView::GetMurderRoom()
 
 MapView::MapView(std::vector<Suspect>& suspects, std::vector<Room>& rooms) : suspects(suspects), rooms(rooms)
 {
+	SDLWrapper::LoadSprite("sprites/mapScreen.png");
+	SDLWrapper::LoadSprite("sprites/mapScreenPen.png");
+
 	player = 21 + (W * 8);
 	playerRoom = static_cast<char>(map[player]);
 

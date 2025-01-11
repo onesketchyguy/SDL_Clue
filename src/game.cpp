@@ -146,7 +146,6 @@ void Game::DisplayInterview(float deltaTime)
 	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - suspectSprite.height };
 
 	suspects.at(interviewing).Draw(suspectPos);
-	SDLWrapper::DrawString(suspects.at(interviewing).name, suspectPos + gobl::vec2<int>{ 0, suspectSprite.height }, sdl::BLACK);
 	speachBubblePos.y += 25;
 	SDLWrapper::DrawString(curScene.speakerState, speachBubblePos, sdl::WHITE);
 	speachBubblePos.y += 25;
@@ -188,7 +187,14 @@ void Game::DisplayInterview(float deltaTime)
 				}
 				else if (curScene.secondStep.at(curScene.outcomeState) == "suspect")
 				{
-					DrawCards(suspects, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+					std::vector<Suspect> newSuspects{};
+					for (int i = 0; i < suspects.size(); i++)
+					{
+						if (i == interviewing) continue;
+						newSuspects.push_back(suspects.at(i));
+					}
+
+					DrawCards(newSuspects, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 					{
@@ -281,10 +287,11 @@ void Game::DisplayIntroduction(float deltaTime)
 
 bool Game::OnUserUpdate(float deltaTime)
 {
+	SDL_ShowCursor(SDL_ENABLE);
 	if (SDLWrapper::getKeyboard().bDown(SDLK_TAB))
 	{
-		if (state == Investigating) state = Accusing;
-		else if (state == Accusing) state = Investigating;
+		// if (state == Investigating) state = Accusing;
+		if (state == Accusing) state = Investigating;
 	}
 
 	if (state == Investigating)
