@@ -65,9 +65,12 @@ void MapView::DrawCharacters(float deltaTime)
 		SDLWrapper::DrawString("The victem was kill here with the " + weapon, { 0, 0 }, sdl::BLACK);
 		foundMurderRoom = true;
 	}
+}
 
-	// Draw player
-	// SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px)* MAP_SCALE, float(py)* MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
+bool isNavable(const Room& room)
+{
+	for (auto& c : room.components) if (c == "navable") return true;
+	return false;
 }
 
 int MapView::Display(float deltaTime)
@@ -78,12 +81,11 @@ int MapView::Display(float deltaTime)
 
 	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 0) // FIXME: draw all the characters that are in the current room
 	{
-		SDLWrapper::DrawSprite(getRoom(playerRoom)->sprite, {});
 		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE))
 		{
 			playerRoom = '.';
 		}
-
+		DrawRoom(playerRoom);
 		DrawCharacters(deltaTime);
 	}
 	else
@@ -94,7 +96,7 @@ int MapView::Display(float deltaTime)
 		int y = 200;
 		for (auto& r : rooms)
 		{
-			if (r.name == "Hallway") continue;
+			if (isNavable(r) == false) continue;
 			SDL_Color col = sdl::BLACK;
 
 			if (SDLWrapper::getMouse().x > 200 && SDLWrapper::getMouse().x < 600 && SDLWrapper::getMouse().y >= y && SDLWrapper::getMouse().y <= y + 50)
@@ -131,9 +133,28 @@ int MapView::Display(float deltaTime)
 	return 0;
 }
 
+void MapView::DrawRoom(char index)
+{
+	SDLWrapper::DrawSprite(getRoom(index)->sprite, {});
+}
+
+void MapView::DrawRoom(std::string name)
+{
+	for (auto& r : rooms) // FIXME: Make this faster by just storing the index and name
+	{
+		if (r.name == name)
+		{
+			SDLWrapper::DrawSprite(r.sprite, {});
+			return;
+		}
+	}
+
+	std::cout << "Unable to draw room (" << name << ") could not find it." << std::endl;
+}
+
 std::string MapView::GetMurderRoom()
 {
-	return foundMurderRoom ? rooms[murderRoom].name : "???";
+	return foundMurderRoom ? getRoom(murderRoom)->name : "???";
 }
 
 MapView::MapView(std::vector<Suspect>& suspects, std::vector<Room>& rooms) : suspects(suspects), rooms(rooms)

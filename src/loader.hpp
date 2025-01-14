@@ -10,7 +10,7 @@
 
 struct StaticScene
 {
-	std::string background;
+	std::string room;
 	std::string line;
 	std::vector<Card> response;
 };

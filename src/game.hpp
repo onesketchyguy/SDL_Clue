@@ -22,8 +22,8 @@ private:
 	std::vector<QuestionObject> questions{
 		{.text = "Who?", .pos = {150, 100}},
 		{.text = "What?", .pos = {150, 140}},
-		{.text = "Where?", .pos = {150, 160}},
-		{.text = "Why?", .pos = {150, 180}}
+		{.text = "Where?", .pos = {150, 180}},
+		{.text = "Why?", .pos = {150, 220}}
 	};
 
 	int interviewing = 0;

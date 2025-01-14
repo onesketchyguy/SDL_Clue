@@ -6,10 +6,8 @@ responseSprite:
   col: 1
   row: 1
 
-
-# FIXME: Move the bgSprite to a room designation
-#eg. room: detectivesOffice
-bgSprite: "sprites/detectiveoffice.png"
+# Indicate a room to draw in the background
+room: DetectivesOffice
 speakerLine: "There's been a murder..."
 responses:
   - "Alrighty then."

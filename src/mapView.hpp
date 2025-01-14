@@ -1,12 +1,14 @@
 #pragma once
 #include "suspect.hpp"
 #include <iostream>
+#include <vector>
 
 struct Room
 {
 	char index;
 	std::string name;
 	std::string sprite;
+	std::vector<std::string> components{};
 };
 
 class MapView
@@ -32,6 +34,9 @@ public:
 	std::string GetMurderRoom();
 
 	int Display(float deltaTime);
+
+	void DrawRoom(char index);
+	void DrawRoom(std::string name);
 
 	MapView(std::vector<Suspect>& suspects, std::vector<Room>& roomNames);
 };

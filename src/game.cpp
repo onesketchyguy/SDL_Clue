@@ -58,7 +58,7 @@ void Game::DisplayAccusing()
 	static bool foundWhat = false;
 	static int accusing = -1;
 
-	for (auto& q : questions)
+	for (auto& q : questions) // FIXME: There is currently a bug where the user cannot select the weapon, fix that
 	{
 		q.Draw();
 		if (q.mouseOver() && SDLWrapper::getMouse().bRelease(0))
@@ -255,7 +255,8 @@ void Game::DisplayInterview(float deltaTime)
 
 void Game::DisplayIntroduction(float deltaTime)
 {
-	SDLWrapper::DrawSprite(gameData->introScene.background);
+	//SDLWrapper::DrawSprite(gameData->introScene.room);
+	gameData->mapView->DrawRoom(gameData->introScene.room);
 
 	const int FONT_SIZE = 32;
 	gobl::vec2i introLinePos = { 100, SDLWrapper::getScreenHeight() >> 1 };

@@ -84,10 +84,33 @@ std::vector<Room> Loader::LoadRooms()
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
 
+	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components)
+		{
+			for (auto o = node.Begin(); o != node.End(); o++)
+			{
+				std::cout << "Adding component: " << (*o).second.As<std::string>() << std::endl;
+				components.push_back((*o).second.As<std::string>());
+				if ((*o).second["scene"].Type() != 0)
+				{
+					std::cout << "Scene detected: " << (*o).second["scene"].As<std::string>() << std::endl;
+					if ((*o).second["scene"].As<std::string>() == "intro.yaml") // FIXME: Be more dynamic, don't do this
+					{
+						std::cout << "Loading intro scene" << std::endl;
+						LoadIntroScene();
+					}
+					else
+					{
+						LoadScene((*o).second["scene"].As<std::string>());
+					}
+				}
+			}
+		};
+
 	for (auto it = root.Begin(); it != root.End(); it++)
 	{
 		if ((*it).first == "rooms")
 		{
+			std::vector<std::string> components{};
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
 				std::string sprite = "";
@@ -96,9 +119,14 @@ std::vector<Room> Loader::LoadRooms()
 					sprite = (*o).second["sprite"].As<std::string>();
 					SDLWrapper::LoadSprite(sprite);
 				}
+				if ((*o).second["components"].Type() != 0)
+				{
+					iterateComponents((*o).second["components"], components);
+				}
 				if ((*o).second["char"].Type() != 0)
 				{
-					data.push_back(Room{ .index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite });
+					data.push_back(Room{ .index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite, .components = components });
+					components.clear();
 				}
 				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map
 			}
@@ -128,10 +156,9 @@ void Loader::LoadIntroScene()
 			}
 		}
 		else if ((*it).first == "speakerLine") data->introScene.line = (*it).second.As<std::string>();
-		else if ((*it).first == "bgSprite")
+		else if ((*it).first == "room")
 		{
-			data->introScene.background = (*it).second.As<std::string>();
-			SDLWrapper::LoadSprite(data->introScene.background);
+			data->introScene.room = (*it).second.As<std::string>();
 		}
 		else if ((*it).first == "responseSprite")
 		{
@@ -140,7 +167,6 @@ void Loader::LoadIntroScene()
 			height = (*it).second["height"].As<int>();
 			cols = (*it).second["col"].As<int>();
 			rows = (*it).second["row"].As<int>();
-			SDLWrapper::LoadSprite(data->introScene.background);
 		}
 	}
 
@@ -198,56 +224,57 @@ void Loader::LoadScene(std::string sceneName)
 
 bool Loader::LoadPackage(int& s)
 {
+	std::string loading = "Loading...";
+
 	if (s == 0)
 	{
-		SDLWrapper::DrawString("Loading... Creating gamepack");
 		data = new GamePack();
+		loading = "Loading... Loading suspects";
 	}
 	else if (s == 1)
 	{
-		SDLWrapper::DrawString("Loading... Loading suspects");
 		LoadSuspects();
+		loading = "Loading... Loading weapons";
 	}
 	else if (s == 2)
 	{
-		SDLWrapper::DrawString("Loading... Loading weapons");
 		LoadWeapons();
+		loading = "Loading... Loading rooms";
 	}
 	else if (s == 3)
 	{
-		SDLWrapper::DrawString("Loading... Loading rooms");
 		data->rooms = LoadRooms();
-		LoadIntroScene();
-		LoadScene("conversation");
+		// LoadScene("conversation");
+		loading = "Loading... Loading generics";
 	}
 	else if (s == 4)
 	{
-		SDLWrapper::DrawString("Loading... Loading generics");
 		// TODO: Load the player using yaml
 		SDLWrapper::LoadSprite("sprites/player.png");
 
 		// TODO: Load sounds
+
+		loading = "Loading... Randomizing";
 	}
 	else if (s == 5)
 	{
-		SDLWrapper::DrawString("Loading... Randomizing");
-		std::cout << "Shuffling..." << std::endl;
+		// std::cout << "Shuffling..." << std::endl;
 		srand(static_cast<unsigned int>(time(NULL)));
 		data->killer = rand() % data->suspects.size();
 		data->weapon = rand() % data->weapons.size();
-
 		data->suspects.at(data->killer).isKiller = true;
 
-		std::cout << "Picked killer and weapon. Begin game!" << std::endl;
+		//std::cout << "Picked killer and weapon. Begin game!" << std::endl;
+		loading = "Loading... Applying data!";
 	}
 	else if (s == 6)
 	{
-		SDLWrapper::DrawString("Loading... Applying data!");
 		data->mapView = new MapView(data->suspects, data->rooms);
 		data->mapView->weapon = data->weapons.at(data->weapon).name;
 	}
 	else return true;
 
+	SDLWrapper::DrawString(loading, { 0, SDLWrapper::getScreenHeight() - 50 });
 	SDLWrapper::DrawRect(0, SDLWrapper::getScreenHeight() - 30, SDLWrapper::getScreenWidth() * (static_cast<float>(s) / 6.0f), 30);
 	s++;
 	return false;
