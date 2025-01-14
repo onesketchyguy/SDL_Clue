@@ -9,28 +9,13 @@
 #include "mapView.hpp"
 #include "button.hpp"
 
-struct StaticScene
-{
-	std::string background;
-	std::string line;
-	std::vector<Card> response;
-};
-
-struct DynamicScene : public StaticScene
-{
-	std::map<int, std::vector<std::string>> outcomes;
-	std::vector<std::string> secondStep;
-	std::string speakerInitState = "";
-	std::string speakerState;
-	int outcomeState;
-	int finalState = -1;
-};
+#include "loader.hpp"
 
 class Game
 {
 public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
-	Game();
+	void ApplyData(Loader::GamePack* gameData);
 
 	bool OnUserUpdate(float deltaTime);
 private:
@@ -41,26 +26,9 @@ private:
 		{.text = "Why?", .pos = {150, 180}}
 	};
 
-	SpriteData responseSprite;
-	SpriteData suspectSprite;
-	SpriteData weaponSprite;
+	int interviewing = 0;
 
-	std::vector<Suspect> suspects{};
-	std::vector<Card> weapons{};
-
-	int killer = 0, weapon = 0, interviewing = 0;
-
-	StaticScene introScene{};
-	std::map<std::string, DynamicScene> scenes{};
-
-	void LoadSuspects();
-	void LoadWeapons();
-	std::vector<Room> LoadRooms();
-	void LoadIntroScene();
-	void LoadScene(std::string sceneName);
-	void LoadData(std::vector<Room>& rooms);
-
-	MapView* mapView = nullptr;
+	Loader::GamePack* gameData = nullptr;
 
 	enum GameState : uint8_t
 	{

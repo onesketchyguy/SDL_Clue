@@ -65,23 +65,23 @@ void Game::DisplayAccusing()
 		{
 			if (q.text == "Who?" && holding == SUSPECT)
 			{
-				q.answer = suspects.at(holdIndex).name;
+				q.answer = gameData->suspects.at(holdIndex).name;
 				accusing = holdIndex;
 			}
-			if (q.text == "What?" && holding == WEAPON)
+			if (q.text == "What?" && holding == gameData->weapon)
 			{
-				q.answer = weapons.at(holdIndex).name;
-				if (q.answer == weapons.at(weapon).name) foundWhat = true;
+				q.answer = gameData->weapons.at(holdIndex).name;
+				if (q.answer == gameData->weapons.at(gameData->weapon).name) foundWhat = true;
 				else foundWhat = false;
 			}
 		}
 
-		if (q.text == "Why?" && accusing != -1) q.answer = (suspects.at(accusing).foundMotive) ? suspects.at(accusing).GetMotive() : "???";
-		if (q.text == "Where?") q.answer = mapView->GetMurderRoom();
+		if (q.text == "Why?" && accusing != -1) q.answer = (gameData->suspects.at(accusing).foundMotive) ? gameData->suspects.at(accusing).GetMotive() : "???";
+		if (q.text == "Where?") q.answer = gameData->mapView->GetMurderRoom();
 	}
 
-	gobl::vec2i pos = DrawCards(weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
-	DrawCards(suspects, holdIndex, holding, pos);
+	gobl::vec2i pos = DrawCards(gameData->weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+	DrawCards(gameData->suspects, holdIndex, holding, pos);
 	if (SDLWrapper::getMouse().bRelease(0))
 	{
 		holdIndex = -1;
@@ -89,7 +89,7 @@ void Game::DisplayAccusing()
 	}
 
 	static Button btn = { .onClick = [&]() {
-		if ((killer == accusing) && foundWhat) state = Win;
+		if ((gameData->killer == accusing) && foundWhat) state = Win;
 		else
 		{
 			accusing = -1;
@@ -102,34 +102,34 @@ void Game::DisplayAccusing()
 void Game::DisplayKiller(bool foundKiller)
 {
 	gobl::vec2<int> killerPos = { 100, 100 };
-	gobl::vec2<int> weaponPos = { 100, 120 + suspectSprite.height };
+	gobl::vec2<int> weaponPos = { 100, 120 + gameData->suspectSprite.height };
 
 	int score = 0;
 
 	if (foundKiller)
 	{
-		suspects.at(killer).Draw(killerPos);
-		SDLWrapper::DrawString("The killer was " + suspects.at(killer).name, killerPos + gobl::vec2<int>{ 0, suspectSprite.height }, sdl::BLACK);
+		gameData->suspects.at(gameData->killer).Draw(killerPos);
+		SDLWrapper::DrawString("The gameData->killer was " + gameData->suspects.at(gameData->killer).name, killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
 
-		weapons.at(weapon).Draw(weaponPos);
-		SDLWrapper::DrawString("with the " + weapons.at(weapon).name, weaponPos + gobl::vec2<int>{ 0, weaponSprite.height }, sdl::BLACK);
+		gameData->weapons.at(gameData->weapon).Draw(weaponPos);
+		SDLWrapper::DrawString("with the " + gameData->weapons.at(gameData->weapon).name, weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height }, sdl::BLACK);
 		score += 50;
 	}
-	else SDLWrapper::DrawString("The killer wasn't caught...", killerPos + gobl::vec2<int>{ 0, suspectSprite.height }, sdl::BLACK);
+	else SDLWrapper::DrawString("The gameData->killer wasn't caught...", killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
 
-	if (mapView->GetMurderRoom() != "???")
+	if (gameData->mapView->GetMurderRoom() != "???")
 	{
-		SDLWrapper::DrawString("they struck in the " + mapView->GetMurderRoom(), weaponPos + gobl::vec2<int>{ 0, weaponSprite.height + 24 }, sdl::BLACK);
+		SDLWrapper::DrawString("they struck in the " + gameData->mapView->GetMurderRoom(), weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 24 }, sdl::BLACK);
 		score += 25;
 	}
-	else SDLWrapper::DrawString("We may never know where...", weaponPos + gobl::vec2<int>{ 0, weaponSprite.height + 24 }, sdl::BLACK);
+	else SDLWrapper::DrawString("We may never know where...", weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 24 }, sdl::BLACK);
 
-	if (suspects.at(killer).foundMotive)
+	if (gameData->suspects.at(gameData->killer).foundMotive)
 	{
-		SDLWrapper::DrawString("their motive was " + suspects.at(killer).GetMotive(), weaponPos + gobl::vec2<int>{ 0, weaponSprite.height + 36 }, sdl::BLACK);
+		SDLWrapper::DrawString("their motive was " + gameData->suspects.at(gameData->killer).GetMotive(), weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 36 }, sdl::BLACK);
 		score += 25;
 	}
-	else SDLWrapper::DrawString("We may never know why...", weaponPos + gobl::vec2<int>{ 0, weaponSprite.height + 36 }, sdl::BLACK);
+	else SDLWrapper::DrawString("We may never know why...", weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 36 }, sdl::BLACK);
 
 	std::string grade = "F";
 	if (score > 80) grade = "A";
@@ -141,11 +141,11 @@ void Game::DisplayKiller(bool foundKiller)
 
 void Game::DisplayInterview(float deltaTime)
 {
-	auto& curScene = scenes.at("conversation"); // FIXME: Use a dynamic name instead of "conversation"
+	auto& curScene = gameData->scenes.at("conversation"); // FIXME: Use a dynamic name instead of "conversation"
 	gobl::vec2<int> speachBubblePos = gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 };
-	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - suspectSprite.height };
+	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - gameData->suspectSprite.height };
 
-	suspects.at(interviewing).Draw(suspectPos);
+	gameData->suspects.at(interviewing).Draw(suspectPos);
 	speachBubblePos.y += 25;
 	SDLWrapper::DrawString(curScene.speakerState, speachBubblePos, sdl::WHITE);
 	speachBubblePos.y += 25;
@@ -159,7 +159,7 @@ void Game::DisplayInterview(float deltaTime)
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (responseBox.mouseOver()) responseBox.answer = scenes.at("conversation").response.at(holdIndex).name;
+			if (responseBox.mouseOver()) responseBox.answer = gameData->scenes.at("conversation").response.at(holdIndex).name;
 
 			curScene.outcomeState = holdIndex;
 
@@ -173,13 +173,13 @@ void Game::DisplayInterview(float deltaTime)
 		{
 			if (curScene.finalState == -1)
 			{
-				if (curScene.secondStep.at(curScene.outcomeState) == "weapon")
+				if (curScene.secondStep.at(curScene.outcomeState) == "gameData->weapon")
 				{
-					DrawCards(weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+					DrawCards(gameData->weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 					{
-						if (responseBox.mouseOver()) responseBox.answer = weapons.at(holdIndex).name;
+						if (responseBox.mouseOver()) responseBox.answer = gameData->weapons.at(holdIndex).name;
 						curScene.finalState = holdIndex;
 
 						holdIndex = -1;
@@ -188,17 +188,17 @@ void Game::DisplayInterview(float deltaTime)
 				else if (curScene.secondStep.at(curScene.outcomeState) == "suspect")
 				{
 					std::vector<Suspect> newSuspects{};
-					for (int i = 0; i < suspects.size(); i++)
+					for (int i = 0; i < gameData->suspects.size(); i++)
 					{
 						if (i == interviewing) continue;
-						newSuspects.push_back(suspects.at(i));
+						newSuspects.push_back(gameData->suspects.at(i));
 					}
 
 					DrawCards(newSuspects, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 					{
-						if (responseBox.mouseOver()) responseBox.answer = weapons.at(holdIndex).name;
+						if (responseBox.mouseOver()) responseBox.answer = gameData->weapons.at(holdIndex).name;
 						curScene.finalState = holdIndex;
 
 						holdIndex = -1;
@@ -211,26 +211,26 @@ void Game::DisplayInterview(float deltaTime)
 			const auto& outcomes = curScene.outcomes.at(curScene.outcomeState);
 			for (int o = 0; o < outcomes.size(); o++)
 			{
-				if (outcomes.at(o) == "motive" && interviewing != killer)
+				if (outcomes.at(o) == "motive" && interviewing != gameData->killer)
 				{
-					curScene.speakerState = "I heard that they're motive would be " + suspects.at(curScene.finalState).GetMotive();
-					suspects.at(curScene.finalState).foundMotive = true;
+					curScene.speakerState = "I heard that they're motive would be " + gameData->suspects.at(curScene.finalState).GetMotive();
+					gameData->suspects.at(curScene.finalState).foundMotive = true;
 				}
 
-				if (outcomes.at(o) == "suspectMisdirect" && interviewing == killer)
+				if (outcomes.at(o) == "suspectMisdirect" && interviewing == gameData->killer)
 				{
 					curScene.speakerState = "I think I saw the butler...";
 				}
 
-				if (outcomes.at(o) == "weaponMisdirect" && interviewing == killer)
+				if (outcomes.at(o) == "weaponMisdirect" && interviewing == gameData->killer)
 				{
-					if (weapon != curScene.finalState) curScene.speakerState = "I'm pretty sure I saw someone with a " + weapons.at(curScene.finalState).name + " impression on their head...";
-					else curScene.speakerState = "I saw a shadowy figure walking with the " + weapons.at(rand() % weapons.size()).name;
+					if (gameData->weapon != curScene.finalState) curScene.speakerState = "I'm pretty sure I saw someone with a " + gameData->weapons.at(curScene.finalState).name + " impression on their head...";
+					else curScene.speakerState = "I saw a shadowy figure walking with the " + gameData->weapons.at(rand() % gameData->weapons.size()).name;
 				}
 
-				if (outcomes.at(o) == "weapon" && interviewing != killer)
+				if (outcomes.at(o) == "gameData->weapon" && interviewing != gameData->killer)
 				{
-					if (weapon == curScene.finalState) curScene.speakerState = "I mean it's got blood all over it.";
+					if (gameData->weapon == curScene.finalState) curScene.speakerState = "I mean it's got blood all over it.";
 					else curScene.speakerState = "I've never seen that before in my life";
 				}
 
@@ -255,23 +255,23 @@ void Game::DisplayInterview(float deltaTime)
 
 void Game::DisplayIntroduction(float deltaTime)
 {
-	SDLWrapper::DrawSprite(introScene.background);
+	SDLWrapper::DrawSprite(gameData->introScene.background);
 
 	const int FONT_SIZE = 32;
 	gobl::vec2i introLinePos = { 100, SDLWrapper::getScreenHeight() >> 1 };
-	SDLWrapper::DrawString(introScene.line, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
-	SDLWrapper::DrawString(introScene.line, introLinePos, sdl::WHITE, FONT_SIZE);
+	SDLWrapper::DrawString(gameData->introScene.line, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
+	SDLWrapper::DrawString(gameData->introScene.line, introLinePos, sdl::WHITE, FONT_SIZE);
 
 	static QuestionObject continueFactor = { .text = "Response ", .pos = {100, (SDLWrapper::getScreenHeight() >> 1) + 50} };
 	continueFactor.Draw();
 
 	if (continueFactor.answer.size() < 2)
 	{
-		DrawCards(introScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+		DrawCards(gameData->introScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (continueFactor.mouseOver()) continueFactor.answer = introScene.response.at(holdIndex).name;
+			if (continueFactor.mouseOver()) continueFactor.answer = gameData->introScene.response.at(holdIndex).name;
 			holdIndex = -1;
 		}
 	}
@@ -287,7 +287,9 @@ void Game::DisplayIntroduction(float deltaTime)
 
 bool Game::OnUserUpdate(float deltaTime)
 {
-	SDL_ShowCursor(SDL_ENABLE);
+	SDLWrapper::SetClear(SDL_Color(96, 128, 255, 255));
+
+	SDLWrapper::getMouse().visible = true;
 	if (SDLWrapper::getKeyboard().bDown(SDLK_TAB))
 	{
 		// if (state == Investigating) state = Accusing;
@@ -314,7 +316,7 @@ bool Game::OnUserUpdate(float deltaTime)
 		DisplayAccusing();
 		break;
 	case Game::Investigating:
-		stateEvent = mapView->Display(deltaTime);
+		stateEvent = gameData->mapView->Display(deltaTime);
 		if (stateEvent == -1) state = Lose;
 		else if (stateEvent > 0)
 		{
@@ -335,20 +337,7 @@ bool Game::OnUserUpdate(float deltaTime)
 	return true;
 }
 
-Game::Game()
+void Game::ApplyData(Loader::GamePack* data)
 {
-	std::vector<Room> rooms{};
-	LoadData(rooms);
-
-	std::cout << "Shuffling..." << std::endl;
-	srand(static_cast<unsigned int>(time(NULL)));
-	killer = rand() % suspects.size();
-	weapon = rand() % weapons.size();
-
-	suspects.at(killer).isKiller = true;
-
-	std::cout << "Picked killer and weapon. Begin game!" << std::endl;
-
-	mapView = new MapView(suspects, rooms);
-	mapView->weapon = weapons.at(weapon).name;
+	gameData = data;
 }

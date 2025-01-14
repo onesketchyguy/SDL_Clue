@@ -12,22 +12,19 @@ void MapView::DrawCharacters(float deltaTime)
 	int peopleInRoom = 0;
 	bool killerInRoom = false;
 	static float timer = 0.0f;
-	const int px = player % W;
-	const int py = player / W;
 
 	std::string mouseTip = "";
 	for (int i = 0; i < suspects.size(); i++)
 	{
-		if (static_cast<char>(map[suspectPos[i]]) != playerRoom) continue;
+		if (suspectPos[i] != playerRoom) continue;
 
-		const int x = suspectPos[i] % W;
-		const int y = suspectPos[i] / W;
+		// FIXME: We need some positions for suspects to stand
+		const int x = 200;
+		const int y = 200;
 
-		//suspects[i].DrawMini(gobl::vec2<float>{ (x + 0.5f)* MAP_SCALE, (y + 0.5f)* MAP_SCALE }, MAP_SCALE);
+		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(x * MAP_SCALE), SDLWrapper::getScreenHeight() - 200.0f }, 100);
 
-		suspects[i].DrawMini(gobl::vec2f{x * MAP_SCALE, SDLWrapper::getScreenHeight() - 200}, 100);
-
-		if (SDLWrapper::getMouse().y > SDLWrapper::getScreenHeight() - 200 && SDLWrapper::getMouse().y < SDLWrapper::getScreenHeight() - 150 && 
+		if (SDLWrapper::getMouse().y > SDLWrapper::getScreenHeight() - 200 && SDLWrapper::getMouse().y < SDLWrapper::getScreenHeight() - 150 &&
 			SDLWrapper::getMouse().x > x && SDLWrapper::getMouse().x < (x + 1.0f) * 100)
 		{
 			mouseTip = suspects[i].name;
@@ -56,29 +53,21 @@ void MapView::DrawCharacters(float deltaTime)
 
 	if (weaponRoom == playerRoom && weaponRoom != murderRoom)
 	{
-		SDLWrapper::DrawString("This must be the weapon... The " + weapon, { px, py }, sdl::BLACK); // FIXME: Don't tell the player this is the weapon
+		SDLWrapper::DrawString("This must be the weapon... The " + weapon, { 0, 0 }, sdl::BLACK); // FIXME: Don't tell the player this is the weapon
 	}
 	else if (murderRoom == playerRoom && weaponRoom != murderRoom)
 	{
-		SDLWrapper::DrawString("This must be where the victem was killed...", { px, py }, sdl::BLACK);
+		SDLWrapper::DrawString("This must be where the victem was killed...", { 0, 0 }, sdl::BLACK);
 		foundMurderRoom = true;
 	}
 	else if (murderRoom == playerRoom && weaponRoom == murderRoom)
 	{
-		SDLWrapper::DrawString("The victem was kill here with the " + weapon, { px, py }, sdl::BLACK);
+		SDLWrapper::DrawString("The victem was kill here with the " + weapon, { 0, 0 }, sdl::BLACK);
 		foundMurderRoom = true;
 	}
 
 	// Draw player
 	// SDLWrapper::DrawSprite("sprites/player.png", gobl::vec2<float>{ float(px)* MAP_SCALE, float(py)* MAP_SCALE }, gobl::vec2<int>{MAP_SCALE, MAP_SCALE});
-}
-
-void MapView::MoveCharacter(int& character, int x, int y)
-{
-	if (x < 0 && character % W >(character - 1) % W) character -= 1;
-	if (x > 0 && character % W < (character + 1) % W) character += 1;
-	if (y < 0 && character > W) character -= W;
-	if (y > 0 && character + W < W * H) character += W;
 }
 
 int MapView::Display(float deltaTime)
@@ -99,7 +88,7 @@ int MapView::Display(float deltaTime)
 	}
 	else
 	{
-		SDL_ShowCursor(SDL_DISABLE);
+		SDLWrapper::getMouse().visible = false;
 		SDLWrapper::DrawSprite("sprites/mapScreen.png");
 
 		int y = 200;
@@ -117,14 +106,14 @@ int MapView::Display(float deltaTime)
 					playerRoom = r.index; // Transport the player to that room
 				}
 			}
-			SDLWrapper::DrawString(r.name, {200, y}, col, 32);
+			SDLWrapper::DrawString(r.name, { 200, y }, col, 32);
 			y += 50;
 		}
 
-		SDLWrapper::DrawSprite("sprites/mapScreenPen.png", gobl::vec2f{ SDLWrapper::getMouse().x-20,  SDLWrapper::getMouse().y-40 });
+		SDLWrapper::DrawSprite("sprites/mapScreenPen.png", gobl::vec2f{ SDLWrapper::getMouse().x - 20.0f,  SDLWrapper::getMouse().y - 40.0f });
 	}
 
-	const float MOVE_TIME = 1.0f;
+	const float MOVE_TIME = 30.0f; // Move every x seconds
 	static float moveTimer = 0;
 	moveTimer += deltaTime;
 	if (moveTimer >= MOVE_TIME)
@@ -132,7 +121,7 @@ int MapView::Display(float deltaTime)
 		moveTimer = 0.0f;
 		for (auto& s : suspectPos)
 		{
-			MoveCharacter(s, -1 + (rand() % 3), -1 + (rand() % 3));
+			s = rooms.at((rand() % rooms.size())).index;
 		}
 	}
 
@@ -152,19 +141,18 @@ MapView::MapView(std::vector<Suspect>& suspects, std::vector<Room>& rooms) : sus
 	SDLWrapper::LoadSprite("sprites/mapScreen.png");
 	SDLWrapper::LoadSprite("sprites/mapScreenPen.png");
 
-	player = 21 + (W * 8);
-	playerRoom = static_cast<char>(map[player]);
+	playerRoom = rooms.at(0).index;
 
 	do
 	{
-		weaponRoom = static_cast<char>(map[rand() % (W * H)]);
+		weaponRoom = rooms.at((rand() % rooms.size())).index;
 	} while (weaponRoom == '.');
 
 	do
 	{
-		murderRoom = static_cast<char>(map[rand() % (W * H)]);
+		murderRoom = rooms.at((rand() % rooms.size())).index;
 	} while (murderRoom == '.');
 
-	for (int i = 0; i < suspects.size(); i++) suspectPos.push_back(rand() % (W * H));
+	for (int i = 0; i < suspects.size(); i++) suspectPos.push_back(rooms.at((rand() % rooms.size())).index);
 	foundMurderRoom = false;
 }

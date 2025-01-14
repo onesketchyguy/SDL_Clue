@@ -103,6 +103,7 @@ struct Mouse : public ButtonInterface
 {
 	int x;
 	int y;
+	bool visible = true;
 };
 
 class SDLWrapper
@@ -116,6 +117,8 @@ private:
 	Mouse mouse{};
 	int screenWidth, screenHeight;
 	static SDLWrapper* instance;
+
+	SDL_Color clearColor;
 
 	static const std::string DEFAULT_FONT;
 public:
@@ -140,8 +143,9 @@ public:
 	static void OutlineRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);
 	static void OutlineCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);
-	static void DrawString(const std::string& str, gobl::vec2i pos, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 }, const uint8_t& fontSize = 16, const std::string& font = DEFAULT_FONT);
+	static void DrawString(const std::string& str, gobl::vec2i pos = {}, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 }, const uint8_t& fontSize = 16, const std::string& font = DEFAULT_FONT);
 	static void DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void SetClear(const SDL_Color& col);
 
 	static float deltaTime();
 

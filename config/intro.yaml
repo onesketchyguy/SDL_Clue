@@ -1,3 +1,4 @@
+#FIXME: This should be somewhere else
 responseSprite:
   name: "sprites/response.png"
   width: 300
@@ -6,6 +7,8 @@ responseSprite:
   row: 1
 
 
+# FIXME: Move the bgSprite to a room designation
+#eg. room: detectivesOffice
 bgSprite: "sprites/detectiveoffice.png"
 speakerLine: "There's been a murder..."
 responses:

@@ -165,6 +165,8 @@ bool SDLWrapper::Update()
 {
 	bool appRunning = true;
 
+	SDL_ShowCursor(getMouse().visible);
+
 	// Updated with gobl input method of bit shifting
 	for (int i = 1; i < 5; i++)
 	{
@@ -216,7 +218,7 @@ bool SDLWrapper::Update()
 	// MARK: Render the screen
 	if (renderer != nullptr)
 	{
-		SDL_SetRenderDrawColor(renderer, 96, 128, 255, 255); // Clear the screen
+		SDL_SetRenderDrawColor(renderer, instance->clearColor.r, instance->clearColor.g, instance->clearColor.b, instance->clearColor.a); // Clear the screen
 		SDL_RenderClear(renderer);
 	}
 	else
@@ -364,6 +366,11 @@ void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color c
 void SDLWrapper::DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color col)
 {
 	renderables.push_back(new Line(a.x, a.y, b.x, b.y, col));
+}
+
+void SDLWrapper::SetClear(const SDL_Color& col)
+{
+	instance->clearColor = col;
 }
 
 float SDLWrapper::deltaTime()

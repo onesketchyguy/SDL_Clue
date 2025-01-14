@@ -2,31 +2,29 @@
 width: 800
 height: 800
 
+# FIXME: Add a "navable" tag to rooms
 # The room data
 rooms:
   - name: Hallway
     char: '.'
   - name: Study
     char: 's'
-    sprite: sprites/detectiveoffice.png
-  - name: Hall
-    char: 'h'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/study.png
   - name: Lounge
     char: 'l'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/lounge.png
   - name: Library
     char: 'b'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/library.png
   - name: Dining room
     char: 'f'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/dining.png
   - name: Billiard room
     char: 'd'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/billiards.png
   - name: Kitchen
     char: 'k'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/kitchen.png
   - name: Conservatory
     char: 'c'
-    sprite: sprites/detectiveoffice.png
+    sprite: sprites/conservatory.png
