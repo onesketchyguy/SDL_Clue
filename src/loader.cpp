@@ -84,12 +84,10 @@ std::vector<Room> Loader::LoadRooms()
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
 
-	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components)
+	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs)
 		{
 			for (auto o = node.Begin(); o != node.End(); o++)
 			{
-				std::cout << "Adding component: " << (*o).second.As<std::string>() << std::endl;
-				components.push_back((*o).second.As<std::string>());
 				if ((*o).second["scene"].Type() != 0)
 				{
 					std::cout << "Scene detected: " << (*o).second["scene"].As<std::string>() << std::endl;
@@ -103,6 +101,19 @@ std::vector<Room> Loader::LoadRooms()
 						LoadScene((*o).second["scene"].As<std::string>());
 					}
 				}
+
+				if ((*o).second["standoff"].Type() != 0)
+				{
+					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>();
+					standOffs.push_back({ x, y });
+					std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
+				}
+
+				if ((*o).second["type"].Type() != 0)
+				{
+					std::cout << "Adding type component: " << (*o).second["type"].As<std::string>() << std::endl;
+					components.push_back((*o).second["type"].As<std::string>());
+				}
 			}
 		};
 
@@ -110,6 +121,7 @@ std::vector<Room> Loader::LoadRooms()
 	{
 		if ((*it).first == "rooms")
 		{
+			std::vector<gobl::vec2i> standOffs{};
 			std::vector<std::string> components{};
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
@@ -121,12 +133,19 @@ std::vector<Room> Loader::LoadRooms()
 				}
 				if ((*o).second["components"].Type() != 0)
 				{
-					iterateComponents((*o).second["components"], components);
+					iterateComponents((*o).second["components"], components, standOffs);
 				}
 				if ((*o).second["char"].Type() != 0)
 				{
-					data.push_back(Room{ .index = (*o).second["char"].As<char>(), .name = (*o).second["name"].As<std::string>(), .sprite = sprite, .components = components });
+					data.push_back(Room{
+						.index = (*o).second["char"].As<char>(),
+						.name = (*o).second["name"].As<std::string>(),
+						.sprite = sprite,
+						.components = components,
+						.standOffs = standOffs
+						});
 					components.clear();
+					standOffs.clear();
 				}
 				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map
 			}

@@ -97,6 +97,15 @@ public:
 		if (btns.count(i) > 0) return (btns[i] & 63) > 0;
 		else return 0;
 	}
+
+	bool combo(int* keys, int keyC)
+	{
+		for (int i = 0; i < keyC; i++)
+		{
+			if (bAny(keys[i]) == false) return false;
+		}
+		return true;
+	}
 };
 
 struct Mouse : public ButtonInterface

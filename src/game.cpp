@@ -113,13 +113,13 @@ void Game::DisplayKiller(bool foundKiller)
 	if (foundKiller)
 	{
 		gameData->suspects.at(gameData->killer).Draw(killerPos);
-		SDLWrapper::DrawString("The gameData->killer was " + gameData->suspects.at(gameData->killer).name, killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
+		SDLWrapper::DrawString("The killer was " + gameData->suspects.at(gameData->killer).name, killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
 
 		gameData->weapons.at(gameData->weapon).Draw(weaponPos);
 		SDLWrapper::DrawString("with the " + gameData->weapons.at(gameData->weapon).name, weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height }, sdl::BLACK);
 		score += 50;
 	}
-	else SDLWrapper::DrawString("The gameData->killer wasn't caught...", killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
+	else SDLWrapper::DrawString("The killer wasn't caught...", killerPos + gobl::vec2<int>{ 0, gameData->suspectSprite.height }, sdl::BLACK);
 
 	if (gameData->mapView->GetMurderRoom() != "???")
 	{
@@ -177,7 +177,8 @@ void Game::DisplayInterview(float deltaTime)
 		{
 			if (curScene.finalState == -1)
 			{
-				if (curScene.secondStep.at(curScene.outcomeState) == "gameData->weapon")
+				curScene.speakerState = "Yes?";
+				if (curScene.secondStep.at(curScene.outcomeState) == "weapon")
 				{
 					DrawCards(gameData->weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
@@ -232,7 +233,7 @@ void Game::DisplayInterview(float deltaTime)
 					else curScene.speakerState = "I saw a shadowy figure walking with the " + gameData->weapons.at(rand() % gameData->weapons.size()).name;
 				}
 
-				if (outcomes.at(o) == "gameData->weapon" && interviewing != gameData->killer)
+				if (outcomes.at(o) == "weapon" && interviewing != gameData->killer)
 				{
 					if (gameData->weapon == curScene.finalState) curScene.speakerState = "I mean it's got blood all over it.";
 					else curScene.speakerState = "I've never seen that before in my life";
@@ -290,11 +291,90 @@ void Game::DisplayIntroduction(float deltaTime)
 	}
 }
 
+void Game::DisplayRoomEditor(float deltaTime)
+{
+	static int curEdit = -1;
+	SDLWrapper::SetClear(SDL_Color(0, 0, 0, 255));
+
+	auto DrawPanel = [&]()
+		{
+			SDLWrapper::DrawString("Select room:");
+
+			int y = 16, x = 50;
+			for (int i = 0; i < gameData->rooms.size(); i++)
+			{
+				Button btn{ .onClick = [&] {
+						curEdit = i;
+					}, .text = gameData->rooms.at(i).name, .pos = {x, y} };
+
+				btn.Draw();
+				y += 20;
+			}
+		};
+
+	if (curEdit == -1) DrawPanel();
+	else
+	{
+		SDL_Color textCol = sdl::WHITE;
+		if (gameData->rooms.at(curEdit).sprite.size() > 2)
+		{
+			gameData->mapView->DrawRoom(gameData->rooms.at(curEdit).name); // Draw the room
+			textCol = sdl::BLACK;
+		}
+		Button panelBtn{ .onClick = [&] {
+			curEdit = -1;
+		}, .text = "Editing room: " + gameData->rooms.at(curEdit).name, .pos = { 0, 0 } };
+		panelBtn.Draw();
+
+		if (curEdit == -1) return;
+
+		SDLWrapper::DrawString("sprite: " + gameData->rooms.at(curEdit).sprite, { 0, 20 }, textCol);
+		SDLWrapper::DrawString("components: ", { 0, 36 }, textCol);
+		int y = 48;
+		for (auto& c : gameData->rooms.at(curEdit).components)
+		{
+			SDLWrapper::DrawString(" - " + c, { 16, y }, textCol);
+			y += 16;
+		}
+
+		gobl::vec2i rect = { 100, 100 };
+		static int _holding = -1;
+
+		if (SDLWrapper::getMouse().bHeld(0) == false) _holding = -1;
+		for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
+		{
+			auto& s = gameData->rooms.at(curEdit).standOffs.at(i);
+			if (SDLWrapper::getMouse().x >= s.x && SDLWrapper::getMouse().x <= s.x + rect.x &&
+				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y && SDLWrapper::getMouse().bHeld(0) && _holding == -1) _holding = i;
+
+			SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, sdl::RED);
+			gameData->suspectSprite.Draw(0, 0, s, rect);
+			SDLWrapper::DrawString("standOff: " + std::to_string(s.x) + ", " + std::to_string(s.y), s, sdl::CYAN);
+		}
+
+		if (_holding != -1)
+		{
+			auto& s = gameData->rooms.at(curEdit).standOffs.at(_holding);
+			s.x = SDLWrapper::getMouse().x;
+			s.y = SDLWrapper::getMouse().y;
+		}
+
+		// TODO: Provide tools for editing the existing information
+
+		// TODO: Add new tools for placing the characters
+	}
+}
+
 bool Game::OnUserUpdate(float deltaTime)
 {
 	SDLWrapper::SetClear(SDL_Color(96, 128, 255, 255));
-
 	SDLWrapper::getMouse().visible = true;
+
+	if (SDLWrapper::getKeyboard().combo(new int[] { int(SDLK_LCTRL), int(SDLK_LSHIFT), int(SDLK_RCTRL), int(SDLK_RSHIFT) }, 4))
+	{
+		state = RoomEditing;
+	}
+
 	if (SDLWrapper::getKeyboard().bDown(SDLK_TAB))
 	{
 		// if (state == Investigating) state = Accusing;
@@ -334,6 +414,10 @@ bool Game::OnUserUpdate(float deltaTime)
 		break;
 	case Game::Lose:
 		DisplayKiller(false);
+		break;
+
+	case Game::RoomEditing:
+		DisplayRoomEditor(deltaTime);
 		break;
 	default:
 		break;

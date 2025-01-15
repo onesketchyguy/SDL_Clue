@@ -1,5 +1,6 @@
 #pragma once
 #include "suspect.hpp"
+#include "SDLWrapper.hpp"
 #include <iostream>
 #include <vector>
 
@@ -9,6 +10,7 @@ struct Room
 	std::string name;
 	std::string sprite;
 	std::vector<std::string> components{};
+	std::vector<gobl::vec2i> standOffs{};
 };
 
 class MapView
@@ -23,9 +25,11 @@ class MapView
 
 	std::vector<Suspect>& suspects;
 	std::vector<char> suspectPos{};
+	std::vector<int> roomOccupation{};
 
 	std::vector<Room> rooms{};
 	Room* getRoom(const char&);
+	int getRoomIndex(const char& c);
 
 	void DrawCharacters(float deltaTime);
 

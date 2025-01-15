@@ -16,34 +16,118 @@ rooms:
     char: 's'
     sprite: sprites/study.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Lounge
     char: 'l'
     sprite: sprites/lounge.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Library
     char: 'b'
     sprite: sprites/library.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Dining room
     char: 'f'
     sprite: sprites/dining.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Billiard room
     char: 'd'
     sprite: sprites/billiards.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Kitchen
     char: 'k'
     sprite: sprites/kitchen.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483
   - name: Conservatory
     char: 'c'
     sprite: sprites/conservatory.png
     components:
-      - navable
+      - type: navable
+      - standoff:
+            x: 83
+            y: 494
+      - standoff:
+            x: 255
+            y: 461
+      - standoff:
+            x: 392
+            y: 468
+      - standoff:
+            x: 593
+            y: 483

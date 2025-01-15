@@ -32,12 +32,16 @@ private:
 
 	enum GameState : uint8_t
 	{
+		// User stuff
 		Introduction,
 		Interviewing,
 		Accusing,
 		Investigating,
 		Win,
-		Lose
+		Lose,
+
+		// Developer stuff
+		RoomEditing,
 	};
 
 	GameState state = Introduction;
@@ -49,4 +53,5 @@ private:
 	void DisplayKiller(bool foundKiller);
 	void DisplayInterview(float deltaTime);
 	void DisplayIntroduction(float deltaTime);
+	void DisplayRoomEditor(float deltaTime);
 };
