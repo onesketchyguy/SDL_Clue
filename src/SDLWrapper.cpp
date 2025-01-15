@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <stdexcept>
 #include <iostream>
 #include <vector>
 SDLWrapper* SDLWrapper::instance = nullptr;
@@ -78,6 +79,7 @@ public:
 	const uint8_t& getFontSize() { return fontSize; }
 
 	Text(std::string t, int x, int y, SDL_Color col, std::string f, uint8_t fSize) : text(t), font(f), fontSize(fSize), Renderable(x, y, 0, 0, col, false) {}
+	~Text() = default;
 };
 
 // MARK: This pass
@@ -150,7 +152,7 @@ int SDLWrapper::InitSDL(const char* appName)
 	SetType("window", window);
 
 	// Ready graphics stuff now
-	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+	IMG_Init(IMG_INIT_PNG); // We don't really need all that fancy pantsy stuff, just PNG
 
 	if (TTF_Init() < 0)
 	{
@@ -230,6 +232,7 @@ bool SDLWrapper::Update()
 	// Render all the renderables
 	for (auto& o : renderables)
 	{
+		if (!o || o == nullptr) continue;
 		SDL_SetRenderDrawColor(renderer, o->color.r, o->color.g, o->color.b, o->color.a);
 
 		if (o->GetTypeID() == Renderable::RECT)
@@ -324,10 +327,10 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, SDL_Color col
 void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls again
 void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col)
 {
+	if (n.size() < 2) throw std::exception("Cannot draw: Unable to parse empty string!");
 	if (instance->textures.count(n) <= 0)
 	{
-		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Cannot draw %s because it has not been loaded!", n.c_str());
-		return;
+		throw std::exception(("Cannot draw: " + n + " because it has not been loaded!").c_str());;
 	}
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture

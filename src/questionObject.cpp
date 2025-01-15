@@ -10,7 +10,7 @@ void QuestionObject::Draw()
 	SDLWrapper::OutlineRect(pos.x - repos.x, pos.y - repos.y, rect.x, rect.y, hovered ? sdl::BLACK : sdl::DARK_GREY);
 	SDLWrapper::DrawString(text, { pos.x - (repos.x - 2), pos.y }, sdl::BLACK);
 	SDLWrapper::DrawString(answer, { pos.x + 16, pos.y }, sdl::BLACK);
-	SDLWrapper::DrawLine({ pos.x + 6.0f, pos.y + 8.0f }, { pos.x + (8.0f + (float)answer.size()), pos.y + 8.0f }, sdl::BLACK);
+	SDLWrapper::DrawLine({ pos.x + 6.0f, pos.y + rect.y - 8.0f }, { pos.x + (8.0f * (float)answer.size()), pos.y + rect.y - 8.0f }, sdl::BLACK);
 }
 
 bool QuestionObject::mouseOver()

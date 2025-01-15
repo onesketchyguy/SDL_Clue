@@ -35,7 +35,6 @@ public:
 
 	int Display(float deltaTime);
 
-	void DrawRoom(char index);
 	void DrawRoom(std::string name);
 
 	MapView(std::vector<Suspect>& suspects, std::vector<Room>& roomNames);

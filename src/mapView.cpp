@@ -22,10 +22,10 @@ void MapView::DrawCharacters(float deltaTime)
 		const int x = 200;
 		const int y = 200;
 
-		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(x * MAP_SCALE), SDLWrapper::getScreenHeight() - 200.0f }, 100);
+		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(x), static_cast<float>(y) }, 100);
 
-		if (SDLWrapper::getMouse().y > SDLWrapper::getScreenHeight() - 200 && SDLWrapper::getMouse().y < SDLWrapper::getScreenHeight() - 150 &&
-			SDLWrapper::getMouse().x > x && SDLWrapper::getMouse().x < (x + 1.0f) * 100)
+		if (SDLWrapper::getMouse().y > y && SDLWrapper::getMouse().y < y + 150 &&
+			SDLWrapper::getMouse().x > x && SDLWrapper::getMouse().x < x + 150)
 		{
 			mouseTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;
@@ -79,14 +79,13 @@ int MapView::Display(float deltaTime)
 	interviewing = -1;
 	auto& input = SDLWrapper::getKeyboard();
 
-	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 0) // FIXME: draw all the characters that are in the current room
+	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 2) // FIXME: draw all the characters that are in the current room
 	{
-		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE))
-		{
-			playerRoom = '.';
-		}
-		DrawRoom(playerRoom);
+		DrawRoom(getRoom(playerRoom)->name);
 		DrawCharacters(deltaTime);
+
+		// Leave the room
+		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE)) playerRoom = '.';
 	}
 	else
 	{
@@ -133,17 +132,13 @@ int MapView::Display(float deltaTime)
 	return 0;
 }
 
-void MapView::DrawRoom(char index)
-{
-	SDLWrapper::DrawSprite(getRoom(index)->sprite, {});
-}
-
 void MapView::DrawRoom(std::string name)
 {
 	for (auto& r : rooms) // FIXME: Make this faster by just storing the index and name
 	{
 		if (r.name == name)
 		{
+			if (r.sprite.size() < 2) throw std::exception("Tried to draw a room without a sprite!");
 			SDLWrapper::DrawSprite(r.sprite, {});
 			return;
 		}

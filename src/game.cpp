@@ -39,6 +39,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 				else
 				{
 					SDLWrapper::DrawString("hold " + std::string(SDL_GetKeyName(SDLK_LALT)) + " to magnify", { pos.x, pos.y - 16 }, sdl::BLACK, 12);
+					// SDLWrapper::DrawString("type: " + std::to_string(item.type) + " index: " + std::to_string(i), { pos.x, pos.y - 32 }, sdl::BLACK, 12);
 				}
 
 				pos.y += 20;
@@ -57,33 +58,36 @@ void Game::DisplayAccusing()
 {
 	static bool foundWhat = false;
 	static int accusing = -1;
+	int hoverQ = -1;
 
-	for (auto& q : questions) // FIXME: There is currently a bug where the user cannot select the weapon, fix that
+	for (int i = 0; i < questions.size(); i++)
 	{
-		q.Draw();
-		if (q.mouseOver() && SDLWrapper::getMouse().bRelease(0))
-		{
-			if (q.text == "Who?" && holding == SUSPECT)
-			{
-				q.answer = gameData->suspects.at(holdIndex).name;
-				accusing = holdIndex;
-			}
-			if (q.text == "What?" && holding == gameData->weapon)
-			{
-				q.answer = gameData->weapons.at(holdIndex).name;
-				if (q.answer == gameData->weapons.at(gameData->weapon).name) foundWhat = true;
-				else foundWhat = false;
-			}
-		}
+		questions.at(i).Draw();
+		if (questions.at(i).mouseOver()) hoverQ = i;
 
-		if (q.text == "Why?" && accusing != -1) q.answer = (gameData->suspects.at(accusing).foundMotive) ? gameData->suspects.at(accusing).GetMotive() : "???";
-		if (q.text == "Where?") q.answer = gameData->mapView->GetMurderRoom();
+		if (questions.at(i).text == "Why?" && accusing != -1) questions.at(i).answer = (gameData->suspects.at(accusing).foundMotive) ? gameData->suspects.at(accusing).GetMotive() : "???";
+		if (questions.at(i).text == "Where?") questions.at(i).answer = gameData->mapView->GetMurderRoom();
 	}
 
 	gobl::vec2i pos = DrawCards(gameData->weapons, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 	DrawCards(gameData->suspects, holdIndex, holding, pos);
 	if (SDLWrapper::getMouse().bRelease(0))
 	{
+		if (hoverQ > -1)
+		{
+			if (questions.at(hoverQ).text == "Who?" && holding == SUSPECT)
+			{
+				questions.at(hoverQ).answer = gameData->suspects.at(holdIndex).name;
+				accusing = holdIndex;
+			}
+			if (questions.at(hoverQ).text == "What?" && holding == WEAPON)
+			{
+				questions.at(hoverQ).answer = gameData->weapons.at(holdIndex).name;
+				if (questions.at(hoverQ).answer == gameData->weapons.at(gameData->weapon).name) foundWhat = true;
+				else foundWhat = false;
+			}
+		}
+
 		holdIndex = -1;
 		holding = NONE;
 	}
