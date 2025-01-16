@@ -1,58 +1,61 @@
-# The sprite data
+characters: 
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Colonel Gas
+    sprIndex: 0
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Mrs. Wratz
+    sprIndex: 1
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Professor F. Cake
+    sprIndex: 2
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Deboi Frances
+    sprIndex: 3
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Sir Martine
+    sprIndex: 4
+  - motives: 
+      - Blackmailing
+      - Sexual tension
+      - Money trouble
+      - Accident
+      - Dumb fun
+      - Drunken argument
+    name: Miss Rouge
+    sprIndex: 5
 sprite: 
-  name: sprites/suspects.png
-  width: 64
-  height: 64
   cols: 3
+  height: 64
+  name: sprites/suspects.png
   rows: 2
-    
-# The characters will appear in order of names indicated here
-characters:
-  - name: Colonel Gas
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
-  - name: Mrs. Wratz
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
-  - name: Professor F. Cake
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
-  - name: Deboi Frances
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
-  - name: Sir Martine
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
-  - name: Miss Rouge
-    motives:
-      - Blackmailing 
-      - Sexual tension
-      - Money trouble
-      - Accident
-      - Dumb fun
-      - Drunken argument
+  width: 64

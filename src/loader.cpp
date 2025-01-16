@@ -24,28 +24,25 @@ void Loader::SaveSuspects()
 	SerializeSprite(root, data->suspectSprite);
 
 	int c = 0;
-	for (auto& s : data->suspects) // FIXME: Push back each individual character
+	for (auto& s : data->suspects)
 	{
-		root["characters"].Insert(c);
+		root["characters"].PushBack();
 		root["characters"][c]["name"] = s.name;
 		root["characters"][c]["sprIndex"] = s.sprIndex;
 		root["characters"][c]["motives"] = s.getMotives();
 		c++;
 	}
 
-	YAML::Serialize(root, "config/suspects_test.yaml");
+	YAML::Serialize(root, "config/suspects.yaml");
 }
 
 void Loader::LoadSuspects()
 {
-	std::vector<std::string> suspectNames{};
-	std::vector<std::vector<std::string>> suspectMotives{};
 	std::cout << "Loading suspects..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, "config/suspects.yaml");
 
-	data->killer = 0;
 	for (auto it = root.Begin(); it != root.End(); it++)
 	{
 		if ((*it).first == "sprite") ParseSprite((*it).second, data->suspectSprite);
@@ -53,21 +50,21 @@ void Loader::LoadSuspects()
 		{
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
-				suspectNames.push_back((*o).second["name"].As<std::string>());
+				std::string name = (*o).second["name"].As<std::string>();
+				int sprIndex = (*o).second["sprIndex"].As<int>();
+				std::vector<std::string> suspectMotives{};
 				for (auto m = (*o).second["motives"].Begin(); m != (*o).second["motives"].End(); m++)
 				{
-					if (suspectMotives.size() < data->killer + 1) suspectMotives.push_back(std::vector<std::string>{});
-					suspectMotives.at(data->killer).push_back((*m).second.As<std::string>());
+					suspectMotives.push_back((*m).second.As<std::string>());
 				}
 
-				data->killer++;
+				// Make and push back the card in one go
+				data->suspects.push_back(Suspect{ name, data->suspectSprite, sprIndex, suspectMotives, Game::SUSPECT });
 			}
 		}
 	}
 
-	std::cout << "Done loading suspects. Creating cards." << std::endl;
-
-	for (int i = 0; i < suspectNames.size(); i++) data->suspects.push_back(Suspect{ suspectNames.at(i), data->suspectSprite, i, suspectMotives.at(i), Game::SUSPECT });
+	std::cout << "Done loading suspects." << std::endl;
 }
 
 void Loader::SaveWeapons()
@@ -290,7 +287,6 @@ bool Loader::LoadPackage(int& s)
 	else if (s == 1)
 	{
 		LoadSuspects();
-		SaveSuspects();
 		loading = "Loading... Loading weapons";
 	}
 	else if (s == 2)
