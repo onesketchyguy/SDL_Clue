@@ -8,161 +8,203 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          x: 284
-          y: 408
+          scale: 240
+          x: 249
+          y: 333
       - standoff: 
-          x: 79
-          y: 416
+          scale: 240
+          x: 10
+          y: 334
       - standoff: 
-          x: 270
-          y: 562
+          scale: 270
+          x: 267
+          y: 519
       - standoff: 
-          x: 485
-          y: 408
+          scale: 240
+          x: 492
+          y: 320
       - standoff: 
-          x: 552
-          y: 560
+          scale: 260
+          x: 514
+          y: 483
       - standoff: 
-          x: 52
-          y: 552
+          scale: 240
+          x: 37
+          y: 532
     name: Study
     sprite: sprites/study.png
   - char: 'l'
     components: 
       - type: navable
       - standoff: 
-          x: 324
-          y: 412
+          scale: 210
+          x: 400
+          y: 464
       - standoff: 
-          x: 100
-          y: 423
+          scale: 210
+          x: 196
+          y: 401
       - standoff: 
-          x: 285
-          y: 536
+          scale: 220
+          x: 280
+          y: 541
       - standoff: 
-          x: 548
-          y: 405
+          scale: 200
+          x: 572
+          y: 359
       - standoff: 
-          x: 117
-          y: 542
+          scale: 240
+          x: 10
+          y: 537
       - standoff: 
-          x: 465
-          y: 509
+          scale: 200
+          x: 556
+          y: 576
     name: Lounge
     sprite: sprites/lounge.png
   - char: 'b'
     components: 
       - type: navable
       - standoff: 
-          x: 344
-          y: 231
+          scale: 80
+          x: 381
+          y: 361
       - standoff: 
-          x: 278
-          y: 378
+          scale: 100
+          x: 308
+          y: 441
       - standoff: 
-          x: 430
-          y: 358
+          scale: 110
+          x: 446
+          y: 402
       - standoff: 
-          x: 437
-          y: 528
+          scale: 170
+          x: 484
+          y: 458
       - standoff: 
-          x: 222
-          y: 562
+          scale: 160
+          x: 220
+          y: 595
       - standoff: 
-          x: 562
-          y: 581
+          scale: 180
+          x: 591
+          y: 579
     name: Library
     sprite: sprites/library.png
   - char: 'f'
     components: 
       - type: navable
       - standoff: 
-          x: "-8"
-          y: 436
+          scale: 170
+          x: 6
+          y: 437
       - standoff: 
-          x: 159
-          y: 528
+          scale: 240
+          x: 109
+          y: 513
       - standoff: 
-          x: 435
-          y: 309
+          scale: 160
+          x: 448
+          y: 348
       - standoff: 
+          scale: 200
           x: 588
           y: 487
       - standoff: 
+          scale: 150
           x: 188
-          y: 289
+          y: 336
       - standoff: 
-          x: 376
-          y: 541
+          scale: 250
+          x: 364
+          y: 511
     name: Dining room
     sprite: sprites/dining.png
   - char: 'd'
     components: 
       - type: navable
       - standoff: 
-          x: 174
-          y: 293
+          scale: 170
+          x: 152
+          y: 319
       - standoff: 
-          x: 448
-          y: 256
+          scale: 170
+          x: 454
+          y: 317
       - standoff: 
-          x: 336
-          y: 438
+          scale: 180
+          x: 369
+          y: 463
       - standoff: 
-          x: 534
-          y: 572
+          scale: 210
+          x: 515
+          y: 488
       - standoff: 
+          scale: 200
           x: 13
           y: 580
       - standoff: 
-          x: 606
-          y: 387
+          scale: 170
+          x: 627
+          y: 401
     name: Billiard room
     sprite: sprites/billiards.png
   - char: 'k'
     components: 
       - type: navable
       - standoff: 
-          x: 129
-          y: 564
+          scale: 260
+          x: 81
+          y: 506
       - standoff: 
+          scale: 250
           x: 537
           y: 542
       - standoff: 
-          x: "-6"
-          y: 429
+          scale: 270
+          x: "-37"
+          y: 320
       - standoff: 
-          x: 623
-          y: 358
+          scale: 230
+          x: 608
+          y: 335
       - standoff: 
-          x: 318
-          y: 560
+          scale: 260
+          x: 292
+          y: 554
       - standoff: 
-          x: 120
-          y: 210
+          scale: 190
+          x: 199
+          y: 232
     name: Kitchen
     sprite: sprites/kitchen.png
   - char: 'c'
     components: 
       - type: navable
       - standoff: 
-          x: 83
-          y: 494
+          scale: 80
+          x: 56
+          y: 530
       - standoff: 
-          x: 120
-          y: 196
+          scale: 40
+          x: 126
+          y: 308
       - standoff: 
-          x: 459
-          y: 199
+          scale: 40
+          x: 492
+          y: 220
       - standoff: 
-          x: 586
-          y: 364
+          scale: 70
+          x: 629
+          y: 388
       - standoff: 
-          x: 452
-          y: 549
+          scale: 190
+          x: 554
+          y: 560
       - standoff: 
-          x: 276
-          y: 385
+          scale: 80
+          x: 344
+          y: 426
     name: Conservatory
     sprite: sprites/conservatory.png
 scenes: 

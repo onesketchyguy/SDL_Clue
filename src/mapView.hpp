@@ -11,6 +11,7 @@ struct Room
 	std::string sprite;
 	std::vector<std::string> components{};
 	std::vector<gobl::vec2i> standOffs{};
+	std::vector<int> standScales{};
 };
 
 class MapView
@@ -27,7 +28,7 @@ class MapView
 	std::vector<char> suspectPos{};
 	std::vector<int> roomOccupation{};
 
-	std::vector<Room> rooms{};
+	std::vector<Room> rooms{}; // TODO: Make this a pointer so we don't have 2 separate references to rooms
 	Room* getRoom(const char&);
 	int getRoomIndex(const char& c);
 

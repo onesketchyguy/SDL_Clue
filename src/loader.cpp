@@ -146,6 +146,7 @@ void Loader::SaveRooms()
 			root["rooms"][c]["components"].PushBack();
 			root["rooms"][c]["components"][off + i]["standoff"]["x"] = r.standOffs.at(i).x;
 			root["rooms"][c]["components"][off + i]["standoff"]["y"] = r.standOffs.at(i).y;
+			root["rooms"][c]["components"][off + i]["standoff"]["scale"] = r.standScales.at(i);
 		}
 
 		c++;
@@ -163,7 +164,7 @@ std::vector<Room> Loader::LoadRooms()
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
 
-	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs)
+	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs, std::vector<int>& standScales)
 		{
 			for (auto o = node.Begin(); o != node.End(); o++)
 			{
@@ -171,6 +172,8 @@ std::vector<Room> Loader::LoadRooms()
 				{
 					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>();
 					standOffs.push_back({ x, y });
+					standScales.push_back((*o).second["standoff"]["scale"].As<int>());
+
 					std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
 				}
 
@@ -206,6 +209,7 @@ std::vector<Room> Loader::LoadRooms()
 		{
 			std::vector<gobl::vec2i> standOffs{};
 			std::vector<std::string> components{};
+			std::vector<int> standScales{};
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
 				std::string sprite = "";
@@ -216,7 +220,7 @@ std::vector<Room> Loader::LoadRooms()
 				}
 				if ((*o).second["components"].Type() != 0)
 				{
-					iterateComponents((*o).second["components"], components, standOffs);
+					iterateComponents((*o).second["components"], components, standOffs, standScales);
 				}
 				if ((*o).second["char"].Type() != 0)
 				{
@@ -225,9 +229,11 @@ std::vector<Room> Loader::LoadRooms()
 						.name = (*o).second["name"].As<std::string>(),
 						.sprite = sprite,
 						.components = components,
-						.standOffs = standOffs
+						.standOffs = standOffs,
+						.standScales = standScales
 						});
 					components.clear();
+					standOffs.clear();
 					standOffs.clear();
 				}
 				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map

@@ -26,6 +26,7 @@ void MapView::DrawCharacters(float deltaTime)
 		if (suspectPos[i] != playerRoom) continue;
 
 		gobl::vec2i miniPos{};
+		int scale = 200;
 		int roomIndex = getRoomIndex(suspectPos[i]);
 		if (roomIndex != -1)
 		{
@@ -34,14 +35,14 @@ void MapView::DrawCharacters(float deltaTime)
 				throw std::exception("Too many in room and not enough standoffs!");
 			}
 			miniPos = rooms.at(roomIndex).standOffs.at(inRoom);
+			scale = rooms.at(roomIndex).standScales.at(inRoom);
 			inRoom++;
 		}
 
-		const int SCALE = 200;
-		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(miniPos.x), static_cast<float>(miniPos.y) }, SCALE);
+		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(miniPos.x), static_cast<float>(miniPos.y) }, scale);
 
-		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + SCALE &&
-			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + SCALE)
+		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + scale &&
+			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + scale)
 		{
 			mouseTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;
@@ -144,7 +145,7 @@ int MapView::Display(float deltaTime)
 			do
 			{
 				i = (rand() % rooms.size());
-			} while (!isNavable(rooms.at(i)));
+			} while (isNavable(rooms.at(i)) == false);
 
 			s = rooms.at(i).index;
 			roomOccupation.at(i)++;

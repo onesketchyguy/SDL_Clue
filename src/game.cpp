@@ -347,7 +347,6 @@ void Game::DisplayRoomEditor(float deltaTime)
 			y += 16;
 		}
 
-		gobl::vec2i rect = { 200, 200 };
 		static int _holding = -1;
 		static gobl::vec2i offsetClick = { 0, 0 };
 
@@ -357,20 +356,31 @@ void Game::DisplayRoomEditor(float deltaTime)
 		}
 		for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
 		{
+			int scale = gameData->rooms.at(curEdit).standScales.at(i);
+			gobl::vec2i rect = { scale, scale };
 			int susX = i % gameData->suspectSprite.cols;
 			int susY = i / gameData->suspectSprite.cols;
 			auto& s = gameData->rooms.at(curEdit).standOffs.at(i);
 			if (SDLWrapper::getMouse().x >= s.x && SDLWrapper::getMouse().x <= s.x + rect.x &&
-				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y && SDLWrapper::getMouse().bHeld(0) && _holding == -1)
+				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y)
 			{
-				offsetClick.x = s.x - SDLWrapper::getMouse().x;
-				offsetClick.y = s.y - SDLWrapper::getMouse().y;
-				_holding = i;
-			}
+				if (SDLWrapper::getMouse().bHeld(0) && _holding == -1)
+				{
+					offsetClick.x = s.x - SDLWrapper::getMouse().x;
+					offsetClick.y = s.y - SDLWrapper::getMouse().y;
+					_holding = i;
+				}
+				if (SDLWrapper::getMouse().wheel != 0.0f)
+				{
+					gameData->rooms.at(curEdit).standScales.at(i) += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+				}
 
-			SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, sdl::RED);
+				SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, SDL_Color(0, 255, 255, 50));
+			}
+			else SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, SDL_Color(255, 0, 0, 50));
+
 			gameData->suspectSprite.Draw(susX, susY, s, rect);
-			SDLWrapper::DrawString("standOff: " + std::to_string(s.x) + ", " + std::to_string(s.y), s, sdl::CYAN);
+			SDLWrapper::DrawString("standOff: " + std::to_string(s.x) + ", " + std::to_string(s.y), s, sdl::BLACK);
 		}
 
 		if (_holding != -1)
