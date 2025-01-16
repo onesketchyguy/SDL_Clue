@@ -50,6 +50,7 @@ public:
 	GamePack* getData();
 private:
 
+	void SaveSuspects();
 	void LoadSuspects();
 	void SaveWeapons();
 	void LoadWeapons();

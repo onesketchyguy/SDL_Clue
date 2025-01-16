@@ -9,6 +9,33 @@ void ParseSprite(YAML::Node& node, SpriteData& data)
 	data.Load(node["name"].As<std::string>(), node["width"].As<int>(), node["height"].As<int>(), node["cols"].As<int>(), node["rows"].As<int>());
 }
 
+void SerializeSprite(YAML::Node& root, SpriteData& data)
+{
+	root["sprite"]["name"] = data.name;
+	root["sprite"]["cols"] = data.cols;
+	root["sprite"]["rows"] = data.rows;
+	root["sprite"]["width"] = data.width;
+	root["sprite"]["height"] = data.height;
+}
+
+void Loader::SaveSuspects()
+{
+	YAML::Node root;
+	SerializeSprite(root, data->suspectSprite);
+
+	int c = 0;
+	for (auto& s : data->suspects) // FIXME: Push back each individual character
+	{
+		root["characters"].Insert(c);
+		root["characters"][c]["name"] = s.name;
+		root["characters"][c]["sprIndex"] = s.sprIndex;
+		root["characters"][c]["motives"] = s.getMotives();
+		c++;
+	}
+
+	YAML::Serialize(root, "config/suspects_test.yaml");
+}
+
 void Loader::LoadSuspects()
 {
 	std::vector<std::string> suspectNames{};
@@ -49,11 +76,7 @@ void Loader::SaveWeapons()
 
 	YAML::Node root;
 
-	root["sprite"]["name"] = data->weaponSprite.name;
-	root["sprite"]["cols"] = data->weaponSprite.cols;
-	root["sprite"]["rows"] = data->weaponSprite.rows;
-	root["sprite"]["width"] = data->weaponSprite.width;
-	root["sprite"]["height"] = data->weaponSprite.height;
+	SerializeSprite(root, data->weaponSprite);
 
 	std::vector<std::string> names{};
 	for (auto& w : data->weapons) names.push_back(w.name);
@@ -267,6 +290,7 @@ bool Loader::LoadPackage(int& s)
 	else if (s == 1)
 	{
 		LoadSuspects();
+		SaveSuspects();
 		loading = "Loading... Loading weapons";
 	}
 	else if (s == 2)
