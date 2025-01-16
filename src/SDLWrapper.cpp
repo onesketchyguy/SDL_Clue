@@ -114,6 +114,8 @@ SDLWrapper::~SDLWrapper()
 
 int SDLWrapper::InitSDL(const char* appName)
 {
+	SDL_SetMainReady();
+
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
 
