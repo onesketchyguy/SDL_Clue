@@ -112,6 +112,7 @@ struct Mouse : public ButtonInterface
 {
 	int x;
 	int y;
+	float wheel;
 	bool visible = true;
 };
 

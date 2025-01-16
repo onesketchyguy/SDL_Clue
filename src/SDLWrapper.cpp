@@ -182,6 +182,8 @@ bool SDLWrapper::Update()
 		if ((key.second & 12) >> 3) key.second = 3; // Set inputs that are being pressed to held
 	}
 
+	instance->mouse.wheel = 0;
+
 	//Handle events on queue
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0)
@@ -192,6 +194,10 @@ bool SDLWrapper::Update()
 			std::printf("SDL Quit\n");
 			appRunning = false;
 			// exit(0);
+		}
+		else if (e.type == SDL_MOUSEWHEEL)
+		{
+			instance->mouse.wheel = e.wheel.y;
 		}
 		else if (e.type == SDL_MOUSEMOTION)
 		{
