@@ -48,12 +48,14 @@ public:
 
 	bool LoadPackage(int& s);
 	GamePack* getData();
+	void SaveData();
 private:
 
 	void SaveSuspects();
 	void LoadSuspects();
 	void SaveWeapons();
 	void LoadWeapons();
+	void SaveRooms();
 	std::vector<Room> LoadRooms();
 	void LoadIntroScene();
 	void LoadScene(std::string sceneName);

@@ -109,6 +109,51 @@ void Loader::LoadWeapons()
 	for (int i = 0; i < names.size(); i++) data->weapons.push_back({ names.at(i), data->weaponSprite, i, Game::WEAPON });
 }
 
+void Loader::SaveRooms()
+{
+	std::cout << "Saving rooms..." << std::endl;
+	YAML::Node root;
+
+	int s = 0;
+	for (auto& scene : data->scenes)
+	{
+		root["scenes"].PushBack();
+		root["scenes"][s]["name"] = scene.first;
+		s++;
+	}
+
+	root["scenes"].PushBack();
+	root["scenes"][s]["name"] = "intro"; // Always push the intro into the list
+
+	int c = 0;
+	for (auto& r : data->rooms)
+	{
+		root["rooms"].PushBack();
+		root["rooms"][c]["name"] = r.name;
+		if (r.sprite.size() > 2) root["rooms"][c]["sprite"] = r.sprite;
+		root["rooms"][c]["char"] = std::string("'") + r.index + std::string("'");
+
+		int i;
+		for (i = 0; i < r.components.size(); i++)
+		{
+			root["rooms"][c]["components"].PushBack();
+			root["rooms"][c]["components"][i]["type"] = r.components.at(i);
+		}
+
+		int off = i;
+		for (i = 0; i < r.standOffs.size(); i++)
+		{
+			root["rooms"][c]["components"].PushBack();
+			root["rooms"][c]["components"][off + i]["standoff"]["x"] = r.standOffs.at(i).x;
+			root["rooms"][c]["components"][off + i]["standoff"]["y"] = r.standOffs.at(i).y;
+		}
+
+		c++;
+	}
+
+	YAML::Serialize(root, "config/rooms.yaml");
+}
+
 std::vector<Room> Loader::LoadRooms()
 {
 	std::vector<Room> data;
@@ -122,20 +167,6 @@ std::vector<Room> Loader::LoadRooms()
 		{
 			for (auto o = node.Begin(); o != node.End(); o++)
 			{
-				if ((*o).second["scene"].Type() != 0)
-				{
-					std::cout << "Scene detected: " << (*o).second["scene"].As<std::string>() << std::endl;
-					if ((*o).second["scene"].As<std::string>() == "intro.yaml") // FIXME: Be more dynamic, don't do this
-					{
-						std::cout << "Loading intro scene" << std::endl;
-						LoadIntroScene();
-					}
-					else
-					{
-						LoadScene((*o).second["scene"].As<std::string>());
-					}
-				}
-
 				if ((*o).second["standoff"].Type() != 0)
 				{
 					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>();
@@ -153,6 +184,24 @@ std::vector<Room> Loader::LoadRooms()
 
 	for (auto it = root.Begin(); it != root.End(); it++)
 	{
+		if ((*it).first == "scenes")
+		{
+			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
+			{
+				if ((*o).second["name"].Type() == 0) continue;
+				std::string sceneName = (*o).second["name"].As<std::string>();
+				std::cout << "Scene detected: " << sceneName << std::endl;
+				if (sceneName == "intro") // FIXME: Be more dynamic, don't do this
+				{
+					LoadIntroScene();
+				}
+				else
+				{
+					LoadScene(sceneName);
+				}
+			}
+		}
+
 		if ((*it).first == "rooms")
 		{
 			std::vector<gobl::vec2i> standOffs{};
@@ -331,6 +380,15 @@ bool Loader::LoadPackage(int& s)
 	SDLWrapper::DrawRect(0, SDLWrapper::getScreenHeight() - 30, SDLWrapper::getScreenWidth() * (static_cast<float>(s) / 6.0f), 30);
 	s++;
 	return false;
+}
+
+void Loader::SaveData()
+{
+	SaveSuspects();
+	SaveWeapons();
+	SaveRooms();
+
+	// TODO: Save scenes too
 }
 
 Loader::GamePack* Loader::getData() { return data; }

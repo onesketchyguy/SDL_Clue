@@ -1,5 +1,11 @@
 #include "button.hpp"
 
+gobl::vec2i Button::getEnd()
+{
+	gobl::vec2<int> size = gobl::vec2<int>{ static_cast<int>(text.size()) * 8, 20 };
+	return gobl::vec2i{ pos.x + size.x, pos.y + size.y };
+}
+
 void Button::Draw()
 {
 	gobl::vec2<int> size = gobl::vec2<int>{ static_cast<int>(text.size()) * 8, 20 };

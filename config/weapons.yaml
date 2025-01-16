@@ -1,9 +1,3 @@
-sprite: 
-  name: sprites/weapons.png
-  cols: 3
-  rows: 2
-  height: 32
-  width: 32
 names: 
   - Hammer
   - Dagger
@@ -11,3 +5,9 @@ names:
   - Gun
   - Lawn gnome
   - Poison
+sprite: 
+  cols: 3
+  height: 32
+  name: sprites/weapons.png
+  rows: 2
+  width: 32

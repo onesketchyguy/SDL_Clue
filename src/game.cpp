@@ -326,6 +326,16 @@ void Game::DisplayRoomEditor(float deltaTime)
 		}, .text = "Editing room: " + gameData->rooms.at(curEdit).name, .pos = { 0, 0 } };
 		panelBtn.Draw();
 
+		Button saveBtn{ .onClick = [&] {
+			loader.SaveData();
+		}, .text = "[save changes]", .pos = { panelBtn.getEnd().x, 0} };
+		saveBtn.Draw();
+
+		Button exitBtn{ .onClick = [&] {
+			state = GameState::Investigating;
+		}, .text = "[exit editor]", .pos = { saveBtn.getEnd().x, 0} };
+		exitBtn.Draw();
+
 		if (curEdit == -1) return;
 
 		SDLWrapper::DrawString("sprite: " + gameData->rooms.at(curEdit).sprite, { 0, 20 }, textCol);
@@ -337,43 +347,85 @@ void Game::DisplayRoomEditor(float deltaTime)
 			y += 16;
 		}
 
-		gobl::vec2i rect = { 100, 100 };
+		gobl::vec2i rect = { 200, 200 };
 		static int _holding = -1;
+		static gobl::vec2i offsetClick = { 0, 0 };
 
-		if (SDLWrapper::getMouse().bHeld(0) == false) _holding = -1;
+		if (SDLWrapper::getMouse().bHeld(0) == false && _holding != -1)
+		{
+			_holding = -1;
+		}
 		for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
 		{
+			int susX = i % gameData->suspectSprite.cols;
+			int susY = i / gameData->suspectSprite.cols;
 			auto& s = gameData->rooms.at(curEdit).standOffs.at(i);
 			if (SDLWrapper::getMouse().x >= s.x && SDLWrapper::getMouse().x <= s.x + rect.x &&
-				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y && SDLWrapper::getMouse().bHeld(0) && _holding == -1) _holding = i;
+				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y && SDLWrapper::getMouse().bHeld(0) && _holding == -1)
+			{
+				offsetClick.x = s.x - SDLWrapper::getMouse().x;
+				offsetClick.y = s.y - SDLWrapper::getMouse().y;
+				_holding = i;
+			}
 
 			SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, sdl::RED);
-			gameData->suspectSprite.Draw(0, 0, s, rect);
+			gameData->suspectSprite.Draw(susX, susY, s, rect);
 			SDLWrapper::DrawString("standOff: " + std::to_string(s.x) + ", " + std::to_string(s.y), s, sdl::CYAN);
 		}
 
 		if (_holding != -1)
 		{
 			auto& s = gameData->rooms.at(curEdit).standOffs.at(_holding);
-			s.x = SDLWrapper::getMouse().x;
-			s.y = SDLWrapper::getMouse().y;
+			s.x = SDLWrapper::getMouse().x + offsetClick.x;
+			s.y = SDLWrapper::getMouse().y + offsetClick.y;
+
+			if (SDLWrapper::getKeyboard().bHeld(SDLK_SPACE))
+			{
+				// Delete this point
+				std::vector<gobl::vec2i> newStands{};
+				for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
+				{
+					if (i != _holding)
+						newStands.push_back(gameData->rooms.at(curEdit).standOffs.at(i));
+				}
+				gameData->rooms.at(curEdit).standOffs = newStands;
+				_holding = -1;
+			}
+		}
+		else
+		{
+			if (SDLWrapper::getMouse().bRelease(0) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
+			{
+				gameData->rooms.at(curEdit).standOffs.push_back(SDLWrapper::getMousePos());
+			}
 		}
 
 		// TODO: Provide tools for editing the existing information
-
-		// TODO: Add new tools for placing the characters
 	}
 }
 
 bool Game::OnUserUpdate(float deltaTime)
 {
+	if (!loaded) // Wait until loading is completed
+	{
+		static int currentStep = 0;
+		loaded = loader.LoadPackage(currentStep);
+		if (loaded == true) gameData = loader.getData();
+		return true;
+	}
+
 	SDLWrapper::SetClear(SDL_Color(96, 128, 255, 255));
 	SDLWrapper::getMouse().visible = true;
 
+	const float MAX_TIME = 1.0f;
+	static float debugTime = 0.0f;
+
 	if (SDLWrapper::getKeyboard().combo(new int[] { int(SDLK_LCTRL), int(SDLK_LSHIFT), int(SDLK_RCTRL), int(SDLK_RSHIFT) }, 4))
 	{
-		state = RoomEditing;
+		debugTime += deltaTime;
+		if (debugTime >= MAX_TIME) state = RoomEditing;
 	}
+	else debugTime = 0;
 
 	if (SDLWrapper::getKeyboard().bDown(SDLK_TAB))
 	{
@@ -424,9 +476,4 @@ bool Game::OnUserUpdate(float deltaTime)
 	}
 
 	return true;
-}
-
-void Game::ApplyData(Loader::GamePack* data)
-{
-	gameData = data;
 }

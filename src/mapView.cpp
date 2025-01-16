@@ -37,10 +37,11 @@ void MapView::DrawCharacters(float deltaTime)
 			inRoom++;
 		}
 
-		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(miniPos.x), static_cast<float>(miniPos.y) }, 100);
+		const int SCALE = 200;
+		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(miniPos.x), static_cast<float>(miniPos.y) }, SCALE);
 
-		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + 150 &&
-			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + 150)
+		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + SCALE &&
+			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + SCALE)
 		{
 			mouseTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;

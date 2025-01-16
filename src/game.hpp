@@ -15,7 +15,6 @@ class Game
 {
 public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
-	void ApplyData(Loader::GamePack* gameData);
 
 	bool OnUserUpdate(float deltaTime);
 private:
@@ -45,6 +44,9 @@ private:
 	};
 
 	GameState state = Introduction;
+
+	Loader loader;
+	bool loaded;
 
 	int holdIndex = -1;
 	HoldingType holding = NONE;

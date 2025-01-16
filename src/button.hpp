@@ -12,6 +12,7 @@ public:
 	std::string text;
 	gobl::vec2<int> pos;
 
+	gobl::vec2i getEnd();
 	void Draw();
 };
 

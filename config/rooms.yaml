@@ -1,133 +1,170 @@
-# The sprite data
-width: 800
-height: 800
-
-# The room data
-rooms:
-  - name: Hallway
-    char: '.'
-  - name: DetectivesOffice
-    char: '0'
+rooms: 
+  - char: '.'
+    name: Hallway
+  - char: '0'
+    name: DetectivesOffice
     sprite: sprites/detectiveoffice.png
-    components:
-      - scene: intro.yaml
-      - scene: conversation
-  - name: Study
-    char: 's'
+  - char: 's'
+    components: 
+      - type: navable
+      - standoff: 
+          x: 284
+          y: 408
+      - standoff: 
+          x: 79
+          y: 416
+      - standoff: 
+          x: 270
+          y: 562
+      - standoff: 
+          x: 485
+          y: 408
+      - standoff: 
+          x: 552
+          y: 560
+      - standoff: 
+          x: 52
+          y: 552
+    name: Study
     sprite: sprites/study.png
-    components:
+  - char: 'l'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Lounge
-    char: 'l'
+      - standoff: 
+          x: 324
+          y: 412
+      - standoff: 
+          x: 100
+          y: 423
+      - standoff: 
+          x: 285
+          y: 536
+      - standoff: 
+          x: 548
+          y: 405
+      - standoff: 
+          x: 117
+          y: 542
+      - standoff: 
+          x: 465
+          y: 509
+    name: Lounge
     sprite: sprites/lounge.png
-    components:
+  - char: 'b'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Library
-    char: 'b'
+      - standoff: 
+          x: 344
+          y: 231
+      - standoff: 
+          x: 278
+          y: 378
+      - standoff: 
+          x: 430
+          y: 358
+      - standoff: 
+          x: 437
+          y: 528
+      - standoff: 
+          x: 222
+          y: 562
+      - standoff: 
+          x: 562
+          y: 581
+    name: Library
     sprite: sprites/library.png
-    components:
+  - char: 'f'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Dining room
-    char: 'f'
+      - standoff: 
+          x: "-8"
+          y: 436
+      - standoff: 
+          x: 159
+          y: 528
+      - standoff: 
+          x: 435
+          y: 309
+      - standoff: 
+          x: 588
+          y: 487
+      - standoff: 
+          x: 188
+          y: 289
+      - standoff: 
+          x: 376
+          y: 541
+    name: Dining room
     sprite: sprites/dining.png
-    components:
+  - char: 'd'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Billiard room
-    char: 'd'
+      - standoff: 
+          x: 174
+          y: 293
+      - standoff: 
+          x: 448
+          y: 256
+      - standoff: 
+          x: 336
+          y: 438
+      - standoff: 
+          x: 534
+          y: 572
+      - standoff: 
+          x: 13
+          y: 580
+      - standoff: 
+          x: 606
+          y: 387
+    name: Billiard room
     sprite: sprites/billiards.png
-    components:
+  - char: 'k'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Kitchen
-    char: 'k'
+      - standoff: 
+          x: 129
+          y: 564
+      - standoff: 
+          x: 537
+          y: 542
+      - standoff: 
+          x: "-6"
+          y: 429
+      - standoff: 
+          x: 623
+          y: 358
+      - standoff: 
+          x: 318
+          y: 560
+      - standoff: 
+          x: 120
+          y: 210
+    name: Kitchen
     sprite: sprites/kitchen.png
-    components:
+  - char: 'c'
+    components: 
       - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
-  - name: Conservatory
-    char: 'c'
+      - standoff: 
+          x: 83
+          y: 494
+      - standoff: 
+          x: 120
+          y: 196
+      - standoff: 
+          x: 459
+          y: 199
+      - standoff: 
+          x: 586
+          y: 364
+      - standoff: 
+          x: 452
+          y: 549
+      - standoff: 
+          x: 276
+          y: 385
+    name: Conservatory
     sprite: sprites/conservatory.png
-    components:
-      - type: navable
-      - standoff:
-            x: 83
-            y: 494
-      - standoff:
-            x: 255
-            y: 461
-      - standoff:
-            x: 392
-            y: 468
-      - standoff:
-            x: 593
-            y: 483
+scenes: 
+  - name: conversation
+  - name: intro
