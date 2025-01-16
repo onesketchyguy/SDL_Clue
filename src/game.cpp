@@ -65,7 +65,7 @@ void Game::DisplayAccusing()
 		questions.at(i).Draw();
 		if (questions.at(i).mouseOver()) hoverQ = i;
 
-		if (questions.at(i).text == "Why?" && accusing != -1) questions.at(i).answer = (gameData->suspects.at(accusing).foundMotive) ? gameData->suspects.at(accusing).GetMotive() : "???";
+		if (questions.at(i).text == "Why?" && accusing != -1) questions.at(i).answer = (gameData->suspects.at(accusing).foundMotive) ? gameData->suspects.at(accusing).getMotive() : "???";
 		if (questions.at(i).text == "Where?") questions.at(i).answer = gameData->mapView->GetMurderRoom();
 	}
 
@@ -130,7 +130,7 @@ void Game::DisplayKiller(bool foundKiller)
 
 	if (gameData->suspects.at(gameData->killer).foundMotive)
 	{
-		SDLWrapper::DrawString("their motive was " + gameData->suspects.at(gameData->killer).GetMotive(), weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 36 }, sdl::BLACK);
+		SDLWrapper::DrawString("their motive was " + gameData->suspects.at(gameData->killer).getMotive(), weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 36 }, sdl::BLACK);
 		score += 25;
 	}
 	else SDLWrapper::DrawString("We may never know why...", weaponPos + gobl::vec2<int>{ 0, gameData->weaponSprite.height + 36 }, sdl::BLACK);
@@ -145,11 +145,12 @@ void Game::DisplayKiller(bool foundKiller)
 
 void Game::DisplayInterview(float deltaTime)
 {
+	gameData->mapView->DrawRoom();
 	auto& curScene = gameData->scenes.at("conversation"); // FIXME: Use a dynamic name instead of "conversation"
 	gobl::vec2<int> speachBubblePos = gobl::vec2<int>{ 10, SDLWrapper::getScreenHeight() >> 1 };
-	gobl::vec2<int> suspectPos = gobl::vec2<int>{ 100, speachBubblePos.y - gameData->suspectSprite.height };
+	gobl::vec2f suspectPos = gobl::vec2f{ 100.0f, static_cast<float>(speachBubblePos.y - gameData->suspectSprite.height) };
 
-	gameData->suspects.at(interviewing).Draw(suspectPos);
+	gameData->suspects.at(interviewing).DrawMini(suspectPos, 400);
 	speachBubblePos.y += 25;
 	SDLWrapper::DrawString(curScene.speakerState, speachBubblePos, sdl::WHITE);
 	speachBubblePos.y += 25;
@@ -218,7 +219,7 @@ void Game::DisplayInterview(float deltaTime)
 			{
 				if (outcomes.at(o) == "motive" && interviewing != gameData->killer)
 				{
-					curScene.speakerState = "I heard that they're motive would be " + gameData->suspects.at(curScene.finalState).GetMotive();
+					curScene.speakerState = "I heard that they're motive would be " + gameData->suspects.at(curScene.finalState).getMotive();
 					gameData->suspects.at(curScene.finalState).foundMotive = true;
 				}
 

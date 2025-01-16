@@ -40,7 +40,7 @@ public:
 
 	int Display(float deltaTime);
 
-	void DrawRoom(std::string name);
+	void DrawRoom(std::string name = "");
 
 	MapView(std::vector<Suspect>& suspects, std::vector<Room>& roomNames);
 };

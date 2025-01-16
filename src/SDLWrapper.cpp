@@ -24,7 +24,7 @@ public:
 	SDL_Color color{ 255, 255, 255, 255 };
 	bool solid = true;
 
-	virtual int GetTypeID() { return RECT; }
+	virtual int getTypeID() { return RECT; }
 };
 
 class Circle : public Renderable
@@ -37,7 +37,7 @@ public:
 	}
 
 	const float& getRadius() { return radius; }
-	int GetTypeID() override { return CIRCLE; }
+	int getTypeID() override { return CIRCLE; }
 };
 
 class Line : public Renderable
@@ -47,7 +47,7 @@ public:
 		Renderable(static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2), col) {
 	}
 
-	int GetTypeID() override { return LINE; }
+	int getTypeID() override { return LINE; }
 };
 
 class Sprite : public Renderable
@@ -59,7 +59,7 @@ public:
 	const std::string& getID() { return pathID; }
 	SDL_Rect src{};
 
-	int GetTypeID() override { return SPRITE; }
+	int getTypeID() override { return SPRITE; }
 
 	Sprite(const std::string& path, int x, int y, int w, int h, int srcx, int srcy, int srcw, int srch, SDL_Color col = { 255, 255, 255, 255 }, bool solid = true) :
 		src{ srcx, srcy, srcw, srch }, pathID(path), Renderable(x, y, w, h, col, solid) {
@@ -72,14 +72,13 @@ private:
 	std::string text, font;
 	uint8_t fontSize;
 public:
-	int GetTypeID() override { return TEXT; }
+	int getTypeID() override { return TEXT; }
 
 	const std::string& getString() { return text; }
 	const std::string& getFont() { return font; }
 	const uint8_t& getFontSize() { return fontSize; }
 
 	Text(std::string t, int x, int y, SDL_Color col, std::string f, uint8_t fSize) : text(t), font(f), fontSize(fSize), Renderable(x, y, 0, 0, col, false) {}
-	~Text() = default;
 };
 
 // MARK: This pass
@@ -243,12 +242,13 @@ bool SDLWrapper::Update()
 		if (!o || o == nullptr) continue;
 		SDL_SetRenderDrawColor(renderer, o->color.r, o->color.g, o->color.b, o->color.a);
 
-		if (o->GetTypeID() == Renderable::RECT)
+		if (o->getTypeID() == Renderable::RECT)
 		{
 			if (o->solid == true) SDL_RenderFillRect(renderer, &o->dest);
 			else SDL_RenderDrawRect(renderer, &o->dest);
+			delete o;
 		}
-		else if (o->GetTypeID() == Renderable::CIRCLE)
+		else if (o->getTypeID() == Renderable::CIRCLE)
 		{
 			// FIXME: Implement this, as it is it is not funcitonal
 			Circle* circle = dynamic_cast<Circle*>(o);
@@ -263,13 +263,15 @@ bool SDLWrapper::Update()
 			}
 
 			SDL_RenderDrawLinesF(renderer, points, num);
+			delete circle;
 		}
-		else if (o->GetTypeID() == Renderable::LINE)
+		else if (o->getTypeID() == Renderable::LINE)
 		{
 			SDL_FPoint points[2] = { { (float)o->dest.x, (float)o->dest.y }, { (float)o->dest.w, (float)o->dest.h } };
 			SDL_RenderDrawLinesF(renderer, points, 2);
+			delete o;
 		}
-		else if (o->GetTypeID() == Renderable::SPRITE)
+		else if (o->getTypeID() == Renderable::SPRITE)
 		{
 			Sprite* sprite = dynamic_cast<Sprite*>(o);
 			if (sprite != nullptr && instance->textures[sprite->getID()] != nullptr)
@@ -278,8 +280,9 @@ bool SDLWrapper::Update()
 				SDL_RenderCopy(renderer, texture, (sprite->src.w == 0 ? NULL : &sprite->src), &sprite->dest);
 				// We don't need to destroy this texture because it's just a reference to a library of textures
 			}
+			delete sprite;
 		}
-		else if (o->GetTypeID() == Renderable::TEXT)
+		else if (o->getTypeID() == Renderable::TEXT)
 		{
 			Text* text = dynamic_cast<Text*>(o);
 			TTF_Font* font = static_cast<TTF_Font*>(instance->fonts.at(text->getFont()));
@@ -292,10 +295,11 @@ bool SDLWrapper::Update()
 			SDL_QueryTexture(texture, NULL, NULL, &text->dest.w, &text->dest.h);
 			SDL_RenderCopy(renderer, texture, NULL, &text->dest);
 			SDL_DestroyTexture(texture); // We DO need to destroy this texture because it's been created this frame
+			delete text;
 		}
 
 		// Clean up the pointer to the renderable
-		delete o;
+		//delete o; // For some reason cleaning up here instead of in each individual type leaves memory behind, probably something to do with the data stripping
 	}
 
 	renderables.clear();

@@ -160,12 +160,18 @@ int MapView::Display(float deltaTime)
 
 void MapView::DrawRoom(std::string name)
 {
+	if (name.size() < 2)
+	{
+		SDLWrapper::DrawSprite(rooms.at(getRoomIndex(playerRoom)).sprite);
+		return;
+	}
+
 	for (auto& r : rooms) // FIXME: Make this faster by just storing the index and name
 	{
 		if (r.name == name)
 		{
 			if (r.sprite.size() < 2) throw std::exception("Tried to draw a room without a sprite!");
-			SDLWrapper::DrawSprite(r.sprite, {});
+			SDLWrapper::DrawSprite(r.sprite);
 			return;
 		}
 	}

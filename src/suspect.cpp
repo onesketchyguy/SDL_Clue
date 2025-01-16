@@ -9,7 +9,7 @@ Suspect::Suspect(const std::string& name, SpriteData& spriteData, const int& spr
 
 std::vector<std::string> Suspect::getMotives() { return motives; }
 
-std::string Suspect::GetMotive()
+std::string Suspect::getMotive()
 {
 	return motives.at(motiveIndex);
 }
