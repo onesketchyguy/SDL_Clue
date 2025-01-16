@@ -4,6 +4,11 @@
 #define YAML_DEF
 #include "../libs/yaml.hpp"
 
+void ParseSprite(YAML::Node& node, SpriteData& data)
+{
+	data.Load(node["name"].As<std::string>(), node["width"].As<int>(), node["height"].As<int>(), node["cols"].As<int>(), node["rows"].As<int>());
+}
+
 void Loader::LoadSuspects()
 {
 	std::vector<std::string> suspectNames{};
@@ -13,16 +18,10 @@ void Loader::LoadSuspects()
 	YAML::Node root;
 	YAML::Parse(root, "config/suspects.yaml");
 
-	std::string sprName = "";
-	int sprWidth = 0, sprHeight = 0, sprCols = 0, sprRows = 0;
 	data->killer = 0;
 	for (auto it = root.Begin(); it != root.End(); it++)
 	{
-		if ((*it).first == "width") sprWidth = (*it).second.As<int>();
-		else if ((*it).first == "height") sprHeight = (*it).second.As<int>();
-		else if ((*it).first == "cols") sprCols = (*it).second.As<int>();
-		else if ((*it).first == "spriteName") sprName = (*it).second.As<std::string>();
-		else if ((*it).first == "rows") sprRows = (*it).second.As<int>();
+		if ((*it).first == "sprite") ParseSprite((*it).second, data->suspectSprite);
 		else if ((*it).first == "characters")
 		{
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
@@ -39,10 +38,29 @@ void Loader::LoadSuspects()
 		}
 	}
 
-	data->suspectSprite.Load(sprName, sprWidth, sprHeight, sprCols, sprRows);
 	std::cout << "Done loading suspects. Creating cards." << std::endl;
 
 	for (int i = 0; i < suspectNames.size(); i++) data->suspects.push_back(Suspect{ suspectNames.at(i), data->suspectSprite, i, suspectMotives.at(i), Game::SUSPECT });
+}
+
+void Loader::SaveWeapons()
+{
+	std::cout << "Saving weapons..." << std::endl;
+
+	YAML::Node root;
+
+	root["sprite"]["name"] = data->weaponSprite.name;
+	root["sprite"]["cols"] = data->weaponSprite.cols;
+	root["sprite"]["rows"] = data->weaponSprite.rows;
+	root["sprite"]["width"] = data->weaponSprite.width;
+	root["sprite"]["height"] = data->weaponSprite.height;
+
+	std::vector<std::string> names{};
+	for (auto& w : data->weapons) names.push_back(w.name);
+
+	root["names"] = names;
+
+	YAML::Serialize(root, "config/weapons.yaml");
 }
 
 void Loader::LoadWeapons()
@@ -53,15 +71,12 @@ void Loader::LoadWeapons()
 	YAML::Node root;
 	YAML::Parse(root, "config/weapons.yaml");
 
-	std::string sprName = "";
-	int sprWidth = 0, sprHeight = 0, sprCols = 0, sprRows = 0;
 	for (auto it = root.Begin(); it != root.End(); it++)
 	{
-		if ((*it).first == "width") sprWidth = (*it).second.As<int>();
-		else if ((*it).first == "height") sprHeight = (*it).second.As<int>();
-		else if ((*it).first == "cols") sprCols = (*it).second.As<int>();
-		else if ((*it).first == "rows") sprRows = (*it).second.As<int>();
-		else if ((*it).first == "spriteName") sprName = (*it).second.As<std::string>();
+		if ((*it).first == "sprite")
+		{
+			ParseSprite((*it).second, data->weaponSprite);
+		}
 		else if ((*it).first == "names")
 		{
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
@@ -69,7 +84,6 @@ void Loader::LoadWeapons()
 		}
 	}
 
-	data->weaponSprite.Load(sprName, sprWidth, sprHeight, sprCols, sprRows);
 	std::cout << "Done loading weapons. Creating cards." << std::endl;
 
 	for (int i = 0; i < names.size(); i++) data->weapons.push_back({ names.at(i), data->weaponSprite, i, Game::WEAPON });

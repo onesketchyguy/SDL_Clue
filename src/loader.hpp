@@ -51,6 +51,7 @@ public:
 private:
 
 	void LoadSuspects();
+	void SaveWeapons();
 	void LoadWeapons();
 	std::vector<Room> LoadRooms();
 	void LoadIntroScene();
