@@ -8,6 +8,7 @@ int main(int argc, char* argv[])
 	SDLWrapper* wrapper = new SDLWrapper{ "The butler didn't do it", 800, 800 };
 
 	Game game{};
+	game.OnStart();
 	while (SDLWrapper::Update())
 	{
 		game.OnUserUpdate(SDLWrapper::deltaTime());

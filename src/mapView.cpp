@@ -20,7 +20,7 @@ void MapView::DrawCharacters(float deltaTime)
 	static float timer = 0.0f;
 	int inRoom = 0;
 
-	std::string mouseTip = "";
+	std::string cursorTip = "";
 	for (int i = 0; i < suspects.size(); i++)
 	{
 		if (suspectPos[i] != playerRoom) continue;
@@ -44,7 +44,7 @@ void MapView::DrawCharacters(float deltaTime)
 		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + scale &&
 			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + scale)
 		{
-			mouseTip = suspects[i].name;
+			cursorTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;
 		}
 
@@ -52,10 +52,16 @@ void MapView::DrawCharacters(float deltaTime)
 		peopleInRoom++;
 	}
 
-	if (mouseTip.size() > 0)
+	for (int i = 0; i < rooms.at(getRoomIndex(playerRoom)).props.size(); i++)
+	{
+		auto& prop = rooms.at(getRoomIndex(playerRoom)).props.at(i);
+		SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale }); // TODO: Allow the designer to set the order of props/characters
+	}
+
+	if (cursorTip.size() > 0)
 	{
 		int my = SDLWrapper::getMouse().y - 12;
-		SDLWrapper::DrawString(mouseTip, { SDLWrapper::getMouse().x, my }, sdl::BLACK);
+		SDLWrapper::DrawString(cursorTip, { SDLWrapper::getMouse().x, my }, sdl::BLACK);
 	}
 
 	if (peopleInRoom == 1 && killerInRoom)
@@ -92,14 +98,14 @@ bool isNavable(const Room& room)
 
 int MapView::Display(float deltaTime)
 {
+	dt = deltaTime;
 	static gobl::vec2i lastInput = {};
 	interviewing = -1;
 	auto& input = SDLWrapper::getKeyboard();
 
 	if (getRoom(playerRoom) != nullptr && getRoom(playerRoom)->sprite.size() > 2) // FIXME: draw all the characters that are in the current room
 	{
-		DrawRoom(getRoom(playerRoom)->name);
-		DrawCharacters(deltaTime);
+		DrawRoom(getRoom(playerRoom)->name, true);
 
 		// Leave the room
 		if (input.bDown(SDLK_TAB) || input.bDown(SDLK_SPACE)) playerRoom = '.';
@@ -158,25 +164,29 @@ int MapView::Display(float deltaTime)
 	return 0;
 }
 
-void MapView::DrawRoom(std::string name)
+void MapView::DrawRoom(std::string name, bool populate)
 {
 	if (name.size() < 2)
 	{
 		SDLWrapper::DrawSprite(rooms.at(getRoomIndex(playerRoom)).sprite);
-		return;
 	}
-
-	for (auto& r : rooms) // FIXME: Make this faster by just storing the index and name
+	else
 	{
-		if (r.name == name)
+		bool found = false;
+		for (auto& r : rooms) // FIXME: Make this faster by just storing the index and name
 		{
-			if (r.sprite.size() < 2) throw std::exception("Tried to draw a room without a sprite!");
-			SDLWrapper::DrawSprite(r.sprite);
-			return;
+			if (r.name == name)
+			{
+				if (r.sprite.size() < 2) throw std::exception("Tried to draw a room without a sprite!");
+				SDLWrapper::DrawSprite(r.sprite);
+				found = true;
+				break;
+			}
 		}
+		if (!found) std::cout << "Unable to draw room (" << name << ") could not find it." << std::endl;
 	}
 
-	std::cout << "Unable to draw room (" << name << ") could not find it." << std::endl;
+	if (populate) DrawCharacters(dt);
 }
 
 std::string MapView::GetMurderRoom()

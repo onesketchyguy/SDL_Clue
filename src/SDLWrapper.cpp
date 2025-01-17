@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 SDLWrapper* SDLWrapper::instance = nullptr;
+std::function<void(const char*)> SDLWrapper::onFileDropped{};
 
 const std::string SDLWrapper::DEFAULT_FONT = "fonts/Deutsch.ttf";
 
@@ -196,6 +197,10 @@ bool SDLWrapper::Update()
 			appRunning = false;
 			// exit(0);
 		}
+		if (e.type == SDL_DROPFILE)
+		{
+			if (onFileDropped) onFileDropped(e.drop.file);
+		}
 		else if (e.type == SDL_MOUSEWHEEL)
 		{
 			instance->mouse.wheel = e.wheel.y;
@@ -335,9 +340,11 @@ int SDLWrapper::LoadSprite(const std::string& path)
 	return 0;
 }
 
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, SDL_Color col) { DrawSprite(n, pos, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls to the final item
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, gobl::vec2i{ static_cast<int>(pos.x), static_cast<int>(pos.y) }, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls to the final item
 void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, SDL_Color col) { DrawSprite(n, pos, gobl::vec2i{ 0, 0 }, col); } // Falls to the next item
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls again
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col)
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls again
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col)
 {
 	if (n.size() < 2) throw std::exception("Cannot draw: Unable to parse empty string!");
 	if (instance->textures.count(n) <= 0)
@@ -347,7 +354,7 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i s
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture
 
-	renderables.push_back(new Sprite(n, static_cast<int>(pos.x), static_cast<int>(pos.y), scale.x, scale.y, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col));
+	renderables.push_back(new Sprite(n, pos.x, pos.y, scale.x, scale.y, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col));
 }
 
 void SDLWrapper::DrawRect(int x, int y, int w, int h, SDL_Color col)

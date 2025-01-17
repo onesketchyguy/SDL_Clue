@@ -31,33 +31,44 @@ rooms:
           scale: 240
           x: 37
           y: 532
+      - prop: 
+          name: lipsObj
+          scale: 200
+          sprite: 
+            cols: 1
+            height: 300
+            name: sprites/response.png
+            rows: 1
+            width: 300
+          x: 100
+          y: 100
     name: Study
     sprite: sprites/study.png
   - char: 'l'
     components: 
       - type: navable
       - standoff: 
-          scale: 210
+          scale: 240
           x: 400
           y: 464
       - standoff: 
-          scale: 210
+          scale: 240
           x: 196
           y: 401
       - standoff: 
-          scale: 220
+          scale: 270
           x: 280
           y: 541
       - standoff: 
-          scale: 200
+          scale: 240
           x: 572
           y: 359
       - standoff: 
-          scale: 240
+          scale: 260
           x: 10
           y: 537
       - standoff: 
-          scale: 200
+          scale: 240
           x: 556
           y: 576
     name: Lounge
@@ -66,27 +77,27 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          scale: 80
+          scale: 240
           x: 381
           y: 361
       - standoff: 
-          scale: 100
+          scale: 240
           x: 308
           y: 441
       - standoff: 
-          scale: 110
+          scale: 270
           x: 446
           y: 402
       - standoff: 
-          scale: 170
+          scale: 240
           x: 484
           y: 458
       - standoff: 
-          scale: 160
+          scale: 260
           x: 220
           y: 595
       - standoff: 
-          scale: 180
+          scale: 240
           x: 591
           y: 579
     name: Library
@@ -95,7 +106,7 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          scale: 170
+          scale: 240
           x: 6
           y: 437
       - standoff: 
@@ -103,19 +114,19 @@ rooms:
           x: 109
           y: 513
       - standoff: 
-          scale: 160
+          scale: 270
           x: 448
           y: 348
       - standoff: 
-          scale: 200
+          scale: 240
           x: 588
           y: 487
       - standoff: 
-          scale: 150
+          scale: 260
           x: 188
           y: 336
       - standoff: 
-          scale: 250
+          scale: 240
           x: 364
           y: 511
     name: Dining room
@@ -124,27 +135,27 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          scale: 170
+          scale: 240
           x: 152
           y: 319
       - standoff: 
-          scale: 170
+          scale: 240
           x: 454
           y: 317
       - standoff: 
-          scale: 180
+          scale: 270
           x: 369
           y: 463
       - standoff: 
-          scale: 210
+          scale: 240
           x: 515
           y: 488
       - standoff: 
-          scale: 200
+          scale: 260
           x: 13
           y: 580
       - standoff: 
-          scale: 170
+          scale: 240
           x: 627
           y: 401
     name: Billiard room
@@ -153,11 +164,11 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          scale: 260
+          scale: 240
           x: 81
           y: 506
       - standoff: 
-          scale: 250
+          scale: 240
           x: 537
           y: 542
       - standoff: 
@@ -165,7 +176,7 @@ rooms:
           x: "-37"
           y: 320
       - standoff: 
-          scale: 230
+          scale: 240
           x: 608
           y: 335
       - standoff: 
@@ -173,7 +184,7 @@ rooms:
           x: 292
           y: 554
       - standoff: 
-          scale: 190
+          scale: 240
           x: 199
           y: 232
     name: Kitchen
@@ -182,27 +193,27 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          scale: 80
+          scale: 240
           x: 56
           y: 530
       - standoff: 
-          scale: 40
+          scale: 240
           x: 126
           y: 308
       - standoff: 
-          scale: 40
+          scale: 270
           x: 492
           y: 220
       - standoff: 
-          scale: 70
+          scale: 240
           x: 629
           y: 388
       - standoff: 
-          scale: 190
+          scale: 260
           x: 554
           y: 560
       - standoff: 
-          scale: 80
+          scale: 240
           x: 344
           y: 426
     name: Conservatory

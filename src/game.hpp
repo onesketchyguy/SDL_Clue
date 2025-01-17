@@ -16,6 +16,7 @@ class Game
 public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
 
+	void OnStart();
 	bool OnUserUpdate(float deltaTime);
 private:
 	std::vector<QuestionObject> questions{
@@ -56,4 +57,6 @@ private:
 	void DisplayInterview(float deltaTime);
 	void DisplayIntroduction(float deltaTime);
 	void DisplayRoomEditor(float deltaTime);
+	std::string editorFileDrop;
+	void OnFileDropped(std::string);
 };

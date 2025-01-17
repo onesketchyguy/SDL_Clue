@@ -125,31 +125,46 @@ void Loader::SaveRooms()
 	root["scenes"].PushBack();
 	root["scenes"][s]["name"] = "intro"; // Always push the intro into the list
 
-	int c = 0;
-	for (auto& r : data->rooms)
+	int curRoom = 0;
+	for (auto& roomData : data->rooms)
 	{
+		auto& room = root["rooms"][curRoom];
 		root["rooms"].PushBack();
-		root["rooms"][c]["name"] = r.name;
-		if (r.sprite.size() > 2) root["rooms"][c]["sprite"] = r.sprite;
-		root["rooms"][c]["char"] = std::string("'") + r.index + std::string("'");
+		room["name"] = roomData.name;
+		if (roomData.sprite.size() > 2) room["sprite"] = roomData.sprite;
+		room["char"] = std::string("'") + roomData.index + std::string("'");
 
-		int i;
-		for (i = 0; i < r.components.size(); i++)
+		if (roomData.components.size() > 0)
 		{
-			root["rooms"][c]["components"].PushBack();
-			root["rooms"][c]["components"][i]["type"] = r.components.at(i);
+			int i;
+			for (i = 0; i < roomData.components.size(); i++)
+			{
+				room["components"].PushBack();
+				room["components"][i]["type"] = roomData.components.at(i);
+			}
+
+			int off = i;
+			for (i = 0; i < roomData.standOffs.size(); i++)
+			{
+				room["components"].PushBack();
+				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).x;
+				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).y;
+				room["components"][off + i]["standoff"]["scale"] = roomData.standScales.at(i);
+			}
+
+			off = i;
+			for (i = 0; i < roomData.props.size(); i++)
+			{
+				room["components"].PushBack();
+				room["components"][off + i]["prop"]["scale"] = roomData.props.at(i).scale;
+				room["components"][off + i]["prop"]["x"] = roomData.props.at(i).pos.x;
+				room["components"][off + i]["prop"]["y"] = roomData.props.at(i).pos.y;
+				room["components"][off + i]["prop"]["name"] = roomData.props.at(i).name;
+				SerializeSprite(room["components"][off + 1]["prop"], roomData.props.at(i).sprite);
+			}
 		}
 
-		int off = i;
-		for (i = 0; i < r.standOffs.size(); i++)
-		{
-			root["rooms"][c]["components"].PushBack();
-			root["rooms"][c]["components"][off + i]["standoff"]["x"] = r.standOffs.at(i).x;
-			root["rooms"][c]["components"][off + i]["standoff"]["y"] = r.standOffs.at(i).y;
-			root["rooms"][c]["components"][off + i]["standoff"]["scale"] = r.standScales.at(i);
-		}
-
-		c++;
+		curRoom++;
 	}
 
 	YAML::Serialize(root, "config/rooms.yaml");
@@ -164,10 +179,18 @@ std::vector<Room> Loader::LoadRooms()
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
 
-	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs, std::vector<int>& standScales)
+	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs, std::vector<int>& standScales, std::vector<Prop>& props)
 		{
+			int zeros = 0;
 			for (auto o = node.Begin(); o != node.End(); o++)
 			{
+				if ((*o).second.Type() == 0)
+				{
+					if (zeros >= 100) throw std::exception("YAML Encountered excessive null types!");
+					zeros++;
+					continue;
+				}
+
 				if ((*o).second["standoff"].Type() != 0)
 				{
 					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>();
@@ -175,6 +198,21 @@ std::vector<Room> Loader::LoadRooms()
 					standScales.push_back((*o).second["standoff"]["scale"].As<int>());
 
 					std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
+				}
+
+				if ((*o).second["prop"].Type() != 0)
+				{
+					props.push_back(Prop{
+							.name = (*o).second["prop"]["name"].As<std::string>(),
+							.sprite = {},
+							.pos = { (*o).second["prop"]["x"].As<int>(), (*o).second["prop"]["y"].As<int>() },
+							.scale = (*o).second["prop"]["scale"].As<int>()
+						});
+
+					ParseSprite((*o).second["prop"]["sprite"], props.back().sprite);
+
+					std::cout << "Adding prop: " << props.back().name << std::endl;
+					continue;
 				}
 
 				if ((*o).second["type"].Type() != 0)
@@ -210,6 +248,7 @@ std::vector<Room> Loader::LoadRooms()
 			std::vector<gobl::vec2i> standOffs{};
 			std::vector<std::string> components{};
 			std::vector<int> standScales{};
+			std::vector<Prop> props{};
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
 				std::string sprite = "";
@@ -220,23 +259,22 @@ std::vector<Room> Loader::LoadRooms()
 				}
 				if ((*o).second["components"].Type() != 0)
 				{
-					iterateComponents((*o).second["components"], components, standOffs, standScales);
+					iterateComponents((*o).second["components"], components, standOffs, standScales, props);
 				}
-				if ((*o).second["char"].Type() != 0)
-				{
-					data.push_back(Room{
-						.index = (*o).second["char"].As<char>(),
-						.name = (*o).second["name"].As<std::string>(),
-						.sprite = sprite,
-						.components = components,
-						.standOffs = standOffs,
-						.standScales = standScales
-						});
-					components.clear();
-					standOffs.clear();
-					standOffs.clear();
-				}
-				else rooms.push_back((*o).second["name"].As<std::string>()); // Only push room name to list if it wont appear in the game map
+
+				data.push_back(Room{
+					.index = (*o).second["char"].As<char>(),
+					.name = (*o).second["name"].As<std::string>(),
+					.sprite = sprite,
+					.components = components,
+					.standOffs = standOffs,
+					.standScales = standScales,
+					.props = props
+					});
+				components.clear();
+				standOffs.clear();
+				standOffs.clear();
+				props.clear();
 			}
 		}
 	}

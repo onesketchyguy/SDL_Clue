@@ -19,6 +19,6 @@ void Suspect::DrawMini(gobl::vec2<float> pos, int scale)
 	int col = sprIndex % spriteData.cols;
 	int row = sprIndex / spriteData.cols;
 
-	SDLWrapper::DrawSprite(spriteData.name, gobl::vec2<float>{ pos.x, pos.y }, gobl::vec2<int>{ scale, scale },
+	SDLWrapper::DrawSprite(spriteData.name, gobl::vec2i{ (int)pos.x, (int)pos.y }, gobl::vec2<int>{ scale, scale },
 		gobl::vec2<int>{ col* spriteData.width, row* spriteData.height }, gobl::vec2<int>{ spriteData.width, spriteData.height });
 }

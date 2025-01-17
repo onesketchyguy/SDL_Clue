@@ -339,6 +339,25 @@ void Game::DisplayRoomEditor(float deltaTime)
 
 		if (curEdit == -1) return;
 
+		if (editorFileDrop.size() > 2)
+		{
+			// Import the sprite and put it onto the screen at this position
+			gameData->rooms.at(curEdit).props.push_back(Prop{
+					.name = editorFileDrop,
+					.sprite = editorFileDrop,
+					.pos = SDLWrapper::getMousePos(),
+					.scale = 200 // Default scale
+				});
+
+			editorFileDrop.clear(); // We don't need this anymore
+		}
+
+		for (int i = 0; i < gameData->rooms.at(curEdit).props.size(); i++)
+		{
+			auto& prop = gameData->rooms.at(curEdit).props.at(i);
+			SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale }); // TODO: Allow the designer to set the order of props/characters
+		}
+
 		SDLWrapper::DrawString("sprite: " + gameData->rooms.at(curEdit).sprite, { 0, 20 }, textCol);
 		SDLWrapper::DrawString("components: ", { 0, 36 }, textCol);
 		int y = 48;
@@ -413,6 +432,47 @@ void Game::DisplayRoomEditor(float deltaTime)
 
 		// TODO: Provide tools for editing the existing information
 	}
+}
+
+void Game::OnFileDropped(std::string dir)
+{
+	int slash = 0;
+	std::string parentDir = "";
+	std::string builtDir = "";
+	std::string fileName = "";
+	for (int i = dir.size() - 1; i > 0; i--)
+	{
+		if (dir.at(i) == '/' || dir.at(i) == '\\')
+		{
+			slash = i;
+			if (parentDir.size() > 2)
+			{
+				// std::cout << parentDir << std::endl;
+				builtDir += parentDir + '/' + fileName;
+				if (parentDir == "sprites")
+				{
+					break;
+				}
+				parentDir.clear();
+			}
+		}
+		else if (slash != 0)
+		{
+			parentDir = dir.at(i) + parentDir;
+		}
+		else
+		{
+			fileName = dir.at(i) + fileName;
+		}
+	}
+
+	//std::cout << builtDir << std::endl;
+	editorFileDrop = builtDir;
+}
+
+void Game::OnStart()
+{
+	SDLWrapper::onFileDropped = [&](const char* file) { OnFileDropped(std::string(file)); };
 }
 
 bool Game::OnUserUpdate(float deltaTime)

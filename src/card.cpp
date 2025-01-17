@@ -4,8 +4,7 @@ const gobl::vec2i Card::CARD_RECT = { 80, 120 };
 
 void SpriteData::Draw(int col, int row, gobl::vec2i pos, gobl::vec2i scale)
 {
-	SDLWrapper::DrawSprite(name,
-		gobl::vec2<float>{ static_cast<float>(pos.x), static_cast<float>(pos.y) }, scale,
+	SDLWrapper::DrawSprite(name, pos, scale,
 		gobl::vec2<int>{ col* width, row* height },
 		gobl::vec2<int>{ width, height }
 	);

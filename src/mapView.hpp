@@ -4,6 +4,14 @@
 #include <iostream>
 #include <vector>
 
+struct Prop
+{
+	std::string name;
+	SpriteData sprite;
+	gobl::vec2i pos;
+	int scale;
+};
+
 struct Room
 {
 	char index;
@@ -12,6 +20,7 @@ struct Room
 	std::vector<std::string> components{};
 	std::vector<gobl::vec2i> standOffs{};
 	std::vector<int> standScales{};
+	std::vector<Prop> props{};
 };
 
 class MapView
@@ -23,6 +32,7 @@ class MapView
 	char weaponRoom = '.';
 	char murderRoom = '.';
 	bool foundMurderRoom = false;
+	float dt;
 
 	std::vector<Suspect>& suspects;
 	std::vector<char> suspectPos{};
@@ -40,7 +50,7 @@ public:
 
 	int Display(float deltaTime);
 
-	void DrawRoom(std::string name = "");
+	void DrawRoom(std::string name = "", bool populate = false);
 
 	MapView(std::vector<Suspect>& suspects, std::vector<Room>& roomNames);
 };

@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <SDL2/SDL.h>
+#include <functional>
 
 namespace gobl
 {
@@ -37,6 +38,15 @@ namespace gobl
 	typedef vec2<double> vec2d;
 	typedef vec2<int> vec2i;
 }
+
+struct SpriteData
+{
+	std::string name = "";
+	int width = 0, height = 0, cols = 0, rows = 0;
+
+	void Load(std::string dir, int sprWidth, int sprHeight, int sprCols, int sprRows);
+	void Draw(int col, int row, gobl::vec2i pos, gobl::vec2i scale);
+};
 
 namespace sdl
 {
@@ -146,9 +156,11 @@ public:
 	static const int getScreenWidth() { return instance->screenWidth; }
 
 	static int LoadSprite(const std::string&);
-	static void DrawSprite(const std::string&, gobl::vec2f pos = gobl::vec2f{}, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawSprite(const std::string&, gobl::vec2f pos, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawSprite(const std::string&, gobl::vec2i pos = gobl::vec2i{}, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawSprite(const std::string&, gobl::vec2f pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
-	static void DrawSprite(const std::string&, gobl::vec2f pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void OutlineRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);
@@ -157,6 +169,7 @@ public:
 	static void DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void SetClear(const SDL_Color& col);
 
+	static std::function<void(const char*)> onFileDropped;
 	static float deltaTime();
 
 	template <typename T>
