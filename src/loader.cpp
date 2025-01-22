@@ -111,7 +111,6 @@ void Loader::LoadWeapons()
 
 void Loader::SaveRooms()
 {
-	std::cout << "======== SAVING ROOMS NOT FUNCTIONAL ATM =======" << std::endl;
 	if (debug) std::cout << "Saving rooms..." << std::endl;
 	YAML::Node root;
 
@@ -129,8 +128,8 @@ void Loader::SaveRooms()
 	int curRoom = 0;
 	for (auto& roomData : data->rooms)
 	{
-		auto& room = root["rooms"][curRoom];
 		root["rooms"].PushBack();
+		auto& room = root["rooms"][curRoom];
 		room["name"] = roomData.name;
 		if (roomData.sprite.size() > 2) room["sprite"] = roomData.sprite;
 		room["char"] = std::string("'") + roomData.index + std::string("'");
@@ -151,7 +150,7 @@ void Loader::SaveRooms()
 				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
 				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
 				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
-				//room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
+				room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
 			}
 
 			off = i;
@@ -162,8 +161,8 @@ void Loader::SaveRooms()
 				room["components"][off + i]["prop"]["x"] = roomData.props.at(i).pos.x;
 				room["components"][off + i]["prop"]["y"] = roomData.props.at(i).pos.y;
 				room["components"][off + i]["prop"]["name"] = roomData.props.at(i).name;
-				//room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
-				SerializeSprite(room["components"][off + 1]["prop"], roomData.props.at(i).sprite);
+				room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
+				SerializeSprite(room["components"][off + i]["prop"], roomData.props.at(i).sprite);
 			}
 		}
 
@@ -428,6 +427,7 @@ bool Loader::LoadPackage(int& s)
 	SDLWrapper::DrawString(loading, { 0, SDLWrapper::getScreenHeight() - 50 });
 	SDLWrapper::DrawRect(0, SDLWrapper::getScreenHeight() - 30, static_cast<int>(SDLWrapper::getScreenWidth() * (static_cast<float>(s) / 6.0f)), 30);
 	s++;
+
 	return false;
 }
 
