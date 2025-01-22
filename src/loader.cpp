@@ -38,7 +38,7 @@ void Loader::SaveSuspects()
 
 void Loader::LoadSuspects()
 {
-	std::cout << "Loading suspects..." << std::endl;
+	if (debug) std::cout << "Loading suspects..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, "config/suspects.yaml");
@@ -64,12 +64,12 @@ void Loader::LoadSuspects()
 		}
 	}
 
-	std::cout << "Done loading suspects." << std::endl;
+	if (debug) std::cout << "Done loading suspects." << std::endl;
 }
 
 void Loader::SaveWeapons()
 {
-	std::cout << "Saving weapons..." << std::endl;
+	if (debug) std::cout << "Saving weapons..." << std::endl;
 
 	YAML::Node root;
 
@@ -86,7 +86,7 @@ void Loader::SaveWeapons()
 void Loader::LoadWeapons()
 {
 	std::vector<std::string> names{};
-	std::cout << "Loading weapons..." << std::endl;
+	if (debug) std::cout << "Loading weapons..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, "config/weapons.yaml");
@@ -104,14 +104,14 @@ void Loader::LoadWeapons()
 		}
 	}
 
-	std::cout << "Done loading weapons. Creating cards." << std::endl;
+	if (debug) std::cout << "Done loading weapons. Creating cards." << std::endl;
 
 	for (int i = 0; i < names.size(); i++) data->weapons.push_back({ names.at(i), data->weaponSprite, i, Game::WEAPON });
 }
 
 void Loader::SaveRooms()
 {
-	std::cout << "Saving rooms..." << std::endl;
+	if (debug) std::cout << "Saving rooms..." << std::endl;
 	YAML::Node root;
 
 	int s = 0;
@@ -174,7 +174,7 @@ std::vector<Room> Loader::LoadRooms()
 {
 	std::vector<Room> data;
 	std::vector<std::string> rooms{};
-	std::cout << "Loading rooms..." << std::endl;
+	if (debug) std::cout << "Loading rooms..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
@@ -197,7 +197,7 @@ std::vector<Room> Loader::LoadRooms()
 					standOffs.push_back({ x, y });
 					standScales.push_back((*o).second["standoff"]["scale"].As<int>());
 
-					std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
+					if (debug) std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
 				}
 
 				if ((*o).second["prop"].Type() != 0)
@@ -211,13 +211,13 @@ std::vector<Room> Loader::LoadRooms()
 
 					ParseSprite((*o).second["prop"]["sprite"], props.back().sprite);
 
-					std::cout << "Adding prop: " << props.back().name << std::endl;
+					if (debug) std::cout << "Adding prop: " << props.back().name << std::endl;
 					continue;
 				}
 
 				if ((*o).second["type"].Type() != 0)
 				{
-					std::cout << "Adding type component: " << (*o).second["type"].As<std::string>() << std::endl;
+					if (debug) std::cout << "Adding type component: " << (*o).second["type"].As<std::string>() << std::endl;
 					components.push_back((*o).second["type"].As<std::string>());
 				}
 			}
@@ -231,7 +231,7 @@ std::vector<Room> Loader::LoadRooms()
 			{
 				if ((*o).second["name"].Type() == 0) continue;
 				std::string sceneName = (*o).second["name"].As<std::string>();
-				std::cout << "Scene detected: " << sceneName << std::endl;
+				if (debug) std::cout << "Scene detected: " << sceneName << std::endl;
 				if (sceneName == "intro") // FIXME: Be more dynamic, don't do this
 				{
 					LoadIntroScene();
@@ -279,13 +279,13 @@ std::vector<Room> Loader::LoadRooms()
 		}
 	}
 
-	std::cout << "Done loading rooms.." << std::endl;
+	if (debug) std::cout << "Done loading rooms.." << std::endl;
 	return data;
 }
 
 void Loader::LoadIntroScene()
 {
-	std::cout << "Loading intro scene..." << std::endl;
+	if (debug) std::cout << "Loading intro scene..." << std::endl;
 	std::string spriteDir = "";
 	int width, height, cols = 1, rows = 1;
 
@@ -322,7 +322,7 @@ void Loader::LoadIntroScene()
 void Loader::LoadScene(std::string sceneName)
 {
 	std::string dir = "config/" + sceneName + ".yaml";
-	std::cout << "Loading scene " << dir << "..." << std::endl;
+	if (debug) std::cout << "Loading scene " << dir << "..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, dir.c_str());
@@ -341,7 +341,7 @@ void Loader::LoadScene(std::string sceneName)
 			scene.outcomes.emplace(scene.response.size(), outcomes);
 			scene.response.push_back(Card{ curResponse, data->responseSprite, 0, Game::NONE });
 			scene.secondStep.push_back(secondStep);
-			// std::cout << "Commiting response " << curResponse << " with " << std::to_string(outcomes.size()) << " outcomes" << std::endl;
+			if (debug) std::cout << "Commiting response " << curResponse << " with " << std::to_string(outcomes.size()) << " outcomes" << std::endl;
 			outcomes.clear();
 			curResponse.clear();
 			secondStep.clear();
@@ -421,7 +421,7 @@ bool Loader::LoadPackage(int& s)
 	else return true;
 
 	SDLWrapper::DrawString(loading, { 0, SDLWrapper::getScreenHeight() - 50 });
-	SDLWrapper::DrawRect(0, SDLWrapper::getScreenHeight() - 30, SDLWrapper::getScreenWidth() * (static_cast<float>(s) / 6.0f), 30);
+	SDLWrapper::DrawRect(0, SDLWrapper::getScreenHeight() - 30, static_cast<int>(SDLWrapper::getScreenWidth() * (static_cast<float>(s) / 6.0f)), 30);
 	s++;
 	return false;
 }

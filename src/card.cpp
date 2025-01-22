@@ -40,11 +40,11 @@ void Card::Draw(gobl::vec2<int> pos)
 	spriteData.Draw(col, row, pos + gobl::vec2i{ 10, 10 }, { CARD_RECT.x - 20, CARD_RECT.x - 20 });
 
 	int fontSize = 16;
-	int size = name.size() * (fontSize >> 1);
+	int size = static_cast<int>(name.size()) * (fontSize >> 1);
 	while (size >= CARD_RECT.x)
 	{
 		fontSize--;
-		size = name.size() * (fontSize >> 1);
+		size = static_cast<int>(name.size()) * (fontSize >> 1);
 	}
 
 	SDLWrapper::DrawString(name, pos + gobl::vec2i{ 4, CARD_RECT.y - 20 }, sdl::BLACK, fontSize);
@@ -64,11 +64,11 @@ void Card::DrawZoomed(gobl::vec2<int> pos)
 	spriteData.Draw(col, row, pos + gobl::vec2i{ 10, 10 }, { bigRect.x - 20, bigRect.x - 20 });
 
 	int fontSize = 16;
-	int size = name.size() * (fontSize >> 1);
+	int size = static_cast<int>(name.size()) * (fontSize >> 1);
 	while (size >= bigRect.x)
 	{
 		fontSize--;
-		size = name.size() * (fontSize >> 1);
+		size = static_cast<int>(name.size()) * (fontSize >> 1);
 	}
 
 	SDLWrapper::DrawString(name, pos + gobl::vec2i{ 4, bigRect.y - 20 }, sdl::BLACK, fontSize);

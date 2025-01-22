@@ -6,8 +6,17 @@
 int main(int argc, char* argv[])
 {
 	SDLWrapper* wrapper = new SDLWrapper{ "The butler didn't do it", 800, 800 };
-
 	Game game{};
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (game.debug == false)
+		{
+			game.debug = std::string(argv[i]) == "debug";
+			std::cout << "=========== RUNNING WITH DEBUG ENABLED ===========" << std::endl;
+		}
+	}
+
 	game.OnStart();
 	while (SDLWrapper::Update())
 	{

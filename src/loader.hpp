@@ -46,6 +46,8 @@ public:
 		std::map<std::string, DynamicScene> scenes{};
 	};
 
+	bool debug = false;
+
 	bool LoadPackage(int& s);
 	GamePack* getData();
 	void SaveData();

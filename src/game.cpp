@@ -316,15 +316,16 @@ void Game::DisplayRoomEditor(float deltaTime)
 	if (curEdit == -1) DrawPanel();
 	else
 	{
+		auto& editRoom = gameData->rooms.at(curEdit);
 		SDL_Color textCol = sdl::WHITE;
-		if (gameData->rooms.at(curEdit).sprite.size() > 2)
+		if (editRoom.sprite.size() > 2)
 		{
-			gameData->mapView->DrawRoom(gameData->rooms.at(curEdit).name); // Draw the room
+			gameData->mapView->DrawRoom(editRoom.name); // Draw the room
 			textCol = sdl::BLACK;
 		}
 		Button panelBtn{ .onClick = [&] {
 			curEdit = -1;
-		}, .text = "Editing room: " + gameData->rooms.at(curEdit).name, .pos = { 0, 0 } };
+		}, .text = "Editing room: " + editRoom.name, .pos = { 0, 0 } };
 		panelBtn.Draw();
 
 		Button saveBtn{ .onClick = [&] {
@@ -342,7 +343,7 @@ void Game::DisplayRoomEditor(float deltaTime)
 		if (editorFileDrop.size() > 2)
 		{
 			// Import the sprite and put it onto the screen at this position
-			gameData->rooms.at(curEdit).props.push_back(Prop{
+			editRoom.props.push_back(Prop{
 					.name = editorFileDrop,
 					.sprite = editorFileDrop,
 					.pos = SDLWrapper::getMousePos(),
@@ -352,16 +353,40 @@ void Game::DisplayRoomEditor(float deltaTime)
 			editorFileDrop.clear(); // We don't need this anymore
 		}
 
-		for (int i = 0; i < gameData->rooms.at(curEdit).props.size(); i++)
+		for (int i = 0; i < editRoom.props.size(); i++) // TODO: Allow the designer to set the order of props/characters
 		{
-			auto& prop = gameData->rooms.at(curEdit).props.at(i);
-			SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale }); // TODO: Allow the designer to set the order of props/characters
+			auto& prop = editRoom.props.at(i);
+			SDL_Color tint = sdl::WHITE;
+
+			if (SDLWrapper::getMouse().x >= prop.pos.x && SDLWrapper::getMouse().x <= prop.pos.x + prop.scale &&
+				SDLWrapper::getMouse().y >= prop.pos.y && SDLWrapper::getMouse().y <= prop.pos.y + prop.scale)
+			{
+				tint = sdl::GREY;
+				if (SDLWrapper::getMouse().bDown(2) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
+				{
+					// Delete this prop
+					if (editRoom.props.size() == 1)
+					{
+						editRoom.props.clear();
+						break;
+					}
+
+					std::vector<Prop> newProps{};
+					for (int r = 0; r < editRoom.standOffs.size(); r++)
+						if (r != i) newProps.push_back(editRoom.props.at(r));
+
+					editRoom.props = newProps;
+					break;
+				}
+			}
+
+			SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale }, tint);
 		}
 
-		SDLWrapper::DrawString("sprite: " + gameData->rooms.at(curEdit).sprite, { 0, 20 }, textCol);
+		SDLWrapper::DrawString("sprite: " + editRoom.sprite, { 0, 20 }, textCol);
 		SDLWrapper::DrawString("components: ", { 0, 36 }, textCol);
 		int y = 48;
-		for (auto& c : gameData->rooms.at(curEdit).components)
+		for (auto& c : editRoom.components)
 		{
 			SDLWrapper::DrawString(" - " + c, { 16, y }, textCol);
 			y += 16;
@@ -374,13 +399,19 @@ void Game::DisplayRoomEditor(float deltaTime)
 		{
 			_holding = -1;
 		}
-		for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
+		for (int i = 0; i < editRoom.standOffs.size(); i++)
 		{
-			int scale = gameData->rooms.at(curEdit).standScales.at(i);
+			if (editRoom.standScales.size() <= i)
+			{
+				std::cout << "Element: " << editRoom.name << " standoff(" << std::to_string(i) << ") does not have a scale! Adding a default 100" << std::endl;
+				editRoom.standScales.push_back(100);
+				continue;
+			}
+			int scale = editRoom.standScales.at(i);
 			gobl::vec2i rect = { scale, scale };
 			int susX = i % gameData->suspectSprite.cols;
 			int susY = i / gameData->suspectSprite.cols;
-			auto& s = gameData->rooms.at(curEdit).standOffs.at(i);
+			auto& s = editRoom.standOffs.at(i);
 			if (SDLWrapper::getMouse().x >= s.x && SDLWrapper::getMouse().x <= s.x + rect.x &&
 				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y)
 			{
@@ -390,9 +421,32 @@ void Game::DisplayRoomEditor(float deltaTime)
 					offsetClick.y = s.y - SDLWrapper::getMouse().y;
 					_holding = i;
 				}
+
+				if (SDLWrapper::getMouse().bDown(2) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
+				{
+					// Delete this point
+					std::vector<gobl::vec2i> newStands{};
+					std::vector<int> newScales{};
+					for (int r = 0; r < editRoom.standOffs.size(); r++)
+					{
+						if (i != r)
+						{
+							newStands.push_back(editRoom.standOffs.at(r));
+							newScales.push_back(editRoom.standScales.at(r));
+						}
+					}
+					editRoom.standOffs = newStands;
+					editRoom.standScales = newScales;
+
+					if (_holding == i) _holding = -1;
+
+					// FIXME: Don't cause a flicker
+					break; // Causes a flicker, but I'm okay with it for now
+				}
+
 				if (SDLWrapper::getMouse().wheel != 0.0f)
 				{
-					gameData->rooms.at(curEdit).standScales.at(i) += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+					editRoom.standScales.at(i) += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
 				}
 
 				SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, SDL_Color(0, 255, 255, 50));
@@ -405,28 +459,16 @@ void Game::DisplayRoomEditor(float deltaTime)
 
 		if (_holding != -1)
 		{
-			auto& s = gameData->rooms.at(curEdit).standOffs.at(_holding);
+			auto& s = editRoom.standOffs.at(_holding);
 			s.x = SDLWrapper::getMouse().x + offsetClick.x;
 			s.y = SDLWrapper::getMouse().y + offsetClick.y;
-
-			if (SDLWrapper::getKeyboard().bHeld(SDLK_SPACE))
-			{
-				// Delete this point
-				std::vector<gobl::vec2i> newStands{};
-				for (int i = 0; i < gameData->rooms.at(curEdit).standOffs.size(); i++)
-				{
-					if (i != _holding)
-						newStands.push_back(gameData->rooms.at(curEdit).standOffs.at(i));
-				}
-				gameData->rooms.at(curEdit).standOffs = newStands;
-				_holding = -1;
-			}
 		}
 		else
 		{
 			if (SDLWrapper::getMouse().bRelease(0) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
 			{
-				gameData->rooms.at(curEdit).standOffs.push_back(SDLWrapper::getMousePos());
+				editRoom.standOffs.push_back(SDLWrapper::getMousePos());
+				editRoom.standScales.push_back(100);
 			}
 		}
 
@@ -440,7 +482,7 @@ void Game::OnFileDropped(std::string dir)
 	std::string parentDir = "";
 	std::string builtDir = "";
 	std::string fileName = "";
-	for (int i = dir.size() - 1; i > 0; i--)
+	for (int i = static_cast<int>(dir.size()) - 1; i > 0; i--)
 	{
 		if (dir.at(i) == '/' || dir.at(i) == '\\')
 		{
@@ -472,6 +514,7 @@ void Game::OnFileDropped(std::string dir)
 
 void Game::OnStart()
 {
+	loader.debug = debug;
 	SDLWrapper::onFileDropped = [&](const char* file) { OnFileDropped(std::string(file)); };
 }
 

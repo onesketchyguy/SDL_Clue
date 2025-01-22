@@ -203,7 +203,7 @@ bool SDLWrapper::Update()
 		}
 		else if (e.type == SDL_MOUSEWHEEL)
 		{
-			instance->mouse.wheel = e.wheel.y;
+			instance->mouse.wheel = static_cast<float>(e.wheel.y);
 		}
 		else if (e.type == SDL_MOUSEMOTION)
 		{

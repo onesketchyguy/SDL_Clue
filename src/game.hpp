@@ -15,6 +15,7 @@ class Game
 {
 public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
+	bool debug = false;
 
 	void OnStart();
 	bool OnUserUpdate(float deltaTime);

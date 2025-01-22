@@ -13,7 +13,7 @@ namespace gobl
 	template <typename T>
 	struct vec2
 	{
-		T x = static_cast<float>(0.0), y = static_cast<float>(0.0);
+		T x = static_cast<T>(0.0f), y = static_cast<T>(0.0f);
 		vec2() = default;
 		vec2(T x, T y) : x(x), y(y) {}
 		bool operator==(const vec2& v) { return (x == v.x && y == v.y); }
