@@ -25,24 +25,23 @@ void MapView::DrawCharacters(float deltaTime)
 	{
 		if (suspectPos[i] != playerRoom) continue;
 
-		gobl::vec2i miniPos{};
-		int scale = 200;
 		int roomIndex = getRoomIndex(suspectPos[i]);
-		if (roomIndex != -1)
-		{
-			if (inRoom >= rooms.at(roomIndex).standOffs.size())
-			{
-				throw std::exception("Too many in room and not enough standoffs!");
-			}
-			miniPos = rooms.at(roomIndex).standOffs.at(inRoom);
-			scale = rooms.at(roomIndex).standScales.at(inRoom);
-			inRoom++;
-		}
+		if (roomIndex == -1) throw std::exception("Reached a room index that does not exist!");
+		if (inRoom >= rooms.at(roomIndex).standOffs.size()) throw std::exception("Too many in room and not enough standoffs!");
 
-		suspects[i].DrawMini(gobl::vec2f{ static_cast<float>(miniPos.x), static_cast<float>(miniPos.y) }, scale);
+		Standoff& standOff = rooms.at(roomIndex).standOffs.at(inRoom);
+		inRoom++;
 
-		if (SDLWrapper::getMouse().y > miniPos.y && SDLWrapper::getMouse().y < miniPos.y + scale &&
-			SDLWrapper::getMouse().x > miniPos.x && SDLWrapper::getMouse().x < miniPos.x + scale)
+		// Draw this suspect
+		int col = suspects[i].sprIndex % suspects[i].spriteData.cols;
+		int row = suspects[i].sprIndex / suspects[i].spriteData.cols;
+		SDLWrapper::DrawSprite(suspects[i].spriteData.name, standOff.pos, gobl::vec2<int>{ standOff.scale, standOff.scale },
+			gobl::vec2<int>{ col* suspects[i].spriteData.width, row* suspects[i].spriteData.height },
+			gobl::vec2<int>{ suspects[i].spriteData.width, suspects[i].spriteData.height },
+			sdl::WHITE, standOff.order);
+
+		if (SDLWrapper::getMouse().y > standOff.pos.y && SDLWrapper::getMouse().y < standOff.pos.y + standOff.scale &&
+			SDLWrapper::getMouse().x > standOff.pos.x && SDLWrapper::getMouse().x < standOff.pos.x + standOff.scale)
 		{
 			cursorTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;
@@ -52,10 +51,12 @@ void MapView::DrawCharacters(float deltaTime)
 		peopleInRoom++;
 	}
 
+	// Draw all the props
 	for (int i = 0; i < rooms.at(getRoomIndex(playerRoom)).props.size(); i++)
 	{
 		auto& prop = rooms.at(getRoomIndex(playerRoom)).props.at(i);
-		SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale }); // TODO: Allow the designer to set the order of props/characters
+		SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale },
+			sdl::WHITE, prop.order); // TODO: Allow the designer to set the order of props/characters
 	}
 
 	if (cursorTip.size() > 0)
@@ -134,7 +135,7 @@ int MapView::Display(float deltaTime)
 			y += 50;
 		}
 
-		SDLWrapper::DrawSprite("sprites/mapScreenPen.png", gobl::vec2f{ SDLWrapper::getMouse().x - 20.0f,  SDLWrapper::getMouse().y - 40.0f });
+		SDLWrapper::DrawSprite("sprites/mapScreenPen.png", gobl::vec2i{ SDLWrapper::getMouse().x - 20,  SDLWrapper::getMouse().y - 40 });
 	}
 
 	const float MOVE_TIME = 30.0f; // Move every x seconds

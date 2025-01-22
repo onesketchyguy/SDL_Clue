@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
@@ -14,9 +15,24 @@ const std::string SDLWrapper::DEFAULT_FONT = "fonts/Deutsch.ttf";
 // MARK: Sprite def
 class Renderable
 {
+private:
+	static unsigned short ORDER;
+	unsigned short sortOrder = 0;
 public:
 	Renderable(int x, int y, int w, int h, SDL_Color col = { 255, 255, 255, 255 }, bool solid = true) :
-		dest{ x, y, w, h }, color(col), solid(solid) {
+		dest{ x, y, w, h }, color(col), solid(solid), sortOrder(ORDER++) {
+	}
+
+	static void ResetOrder() { ORDER = 0; }
+
+	void AssignOrder(int v)
+	{
+		sortOrder = ORDER + v;
+	}
+
+	// Comparator function
+	static bool compare(Renderable* a, Renderable* b) {
+		return a->sortOrder < b->sortOrder;
 	}
 
 	typedef enum { RECT, CIRCLE, LINE, SPRITE, TEXT } RenderableType;
@@ -27,6 +43,8 @@ public:
 
 	virtual int getTypeID() { return RECT; }
 };
+
+unsigned short Renderable::ORDER = 0;
 
 class Circle : public Renderable
 {
@@ -227,9 +245,9 @@ bool SDLWrapper::Update()
 		}
 	}
 
+	// MARK: Render the screen
 	SDL_Renderer* renderer = getType<SDL_Renderer>("renderer");
 
-	// MARK: Render the screen
 	if (renderer != nullptr)
 	{
 		SDL_SetRenderDrawColor(renderer, instance->clearColor.r, instance->clearColor.g, instance->clearColor.b, instance->clearColor.a); // Clear the screen
@@ -240,6 +258,8 @@ bool SDLWrapper::Update()
 		std::cout << "No renderer!" << std::endl;
 		return false; // Fail exit
 	}
+
+	if (instance->usingSortOrder) std::sort(renderables.begin(), renderables.end(), Renderable::compare);
 
 	// Render all the renderables
 	for (auto& o : renderables)
@@ -308,6 +328,7 @@ bool SDLWrapper::Update()
 	}
 
 	renderables.clear();
+	Renderable::ResetOrder();
 
 	// Push everything onto the screen
 	SDL_RenderPresent(getType<SDL_Renderer>("renderer"));
@@ -340,11 +361,9 @@ int SDLWrapper::LoadSprite(const std::string& path)
 	return 0;
 }
 
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, SDL_Color col) { DrawSprite(n, pos, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls to the final item
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, gobl::vec2i{ static_cast<int>(pos.x), static_cast<int>(pos.y) }, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls to the final item
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2f pos, SDL_Color col) { DrawSprite(n, pos, gobl::vec2i{ 0, 0 }, col); } // Falls to the next item
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, SDL_Color col) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col); } // Falls again
-void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col)
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, SDL_Color col) { DrawSprite(n, pos, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col, 0); }
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, SDL_Color col, short order) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col, order); }
+void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col, short order)
 {
 	if (n.size() < 2) throw std::exception("Cannot draw: Unable to parse empty string!");
 	if (instance->textures.count(n) <= 0)
@@ -354,7 +373,13 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i s
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture
 
-	renderables.push_back(new Sprite(n, pos.x, pos.y, scale.x, scale.y, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col));
+	Sprite* sprite = new Sprite(n, pos.x, pos.y, scale.x, scale.y, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col);
+	if (order != 0)
+	{
+		sprite->AssignOrder(order);
+		instance->usingSortOrder = true;
+	}
+	renderables.push_back(sprite);
 }
 
 void SDLWrapper::DrawRect(int x, int y, int w, int h, SDL_Color col)

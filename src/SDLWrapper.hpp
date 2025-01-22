@@ -140,6 +140,7 @@ private:
 
 	SDL_Color clearColor;
 
+	bool usingSortOrder = false;
 	static const std::string DEFAULT_FONT;
 public:
 	SDLWrapper(const char* appName, int width, int height);
@@ -156,11 +157,11 @@ public:
 	static const int getScreenWidth() { return instance->screenWidth; }
 
 	static int LoadSprite(const std::string&);
-	static void DrawSprite(const std::string&, gobl::vec2f pos, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+
 	static void DrawSprite(const std::string&, gobl::vec2i pos = gobl::vec2i{}, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
-	static void DrawSprite(const std::string&, gobl::vec2f pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
-	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
-	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 }, short order = 0);
+	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 }, short order = 0);
+
 	static void DrawRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void OutlineRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);

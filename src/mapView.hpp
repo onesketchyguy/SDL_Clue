@@ -4,12 +4,20 @@
 #include <iostream>
 #include <vector>
 
+struct Standoff
+{
+	gobl::vec2i pos;
+	int scale;
+	short order = 0;
+};
+
 struct Prop
 {
 	std::string name;
 	SpriteData sprite;
 	gobl::vec2i pos;
 	int scale;
+	short order = 0;
 };
 
 struct Room
@@ -18,8 +26,7 @@ struct Room
 	std::string name;
 	std::string sprite;
 	std::vector<std::string> components{};
-	std::vector<gobl::vec2i> standOffs{};
-	std::vector<int> standScales{};
+	std::vector<Standoff> standOffs{};
 	std::vector<Prop> props{};
 };
 

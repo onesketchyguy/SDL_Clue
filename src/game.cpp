@@ -401,42 +401,31 @@ void Game::DisplayRoomEditor(float deltaTime)
 		}
 		for (int i = 0; i < editRoom.standOffs.size(); i++)
 		{
-			if (editRoom.standScales.size() <= i)
-			{
-				std::cout << "Element: " << editRoom.name << " standoff(" << std::to_string(i) << ") does not have a scale! Adding a default 100" << std::endl;
-				editRoom.standScales.push_back(100);
-				continue;
-			}
-			int scale = editRoom.standScales.at(i);
-			gobl::vec2i rect = { scale, scale };
 			int susX = i % gameData->suspectSprite.cols;
 			int susY = i / gameData->suspectSprite.cols;
 			auto& s = editRoom.standOffs.at(i);
-			if (SDLWrapper::getMouse().x >= s.x && SDLWrapper::getMouse().x <= s.x + rect.x &&
-				SDLWrapper::getMouse().y >= s.y && SDLWrapper::getMouse().y <= s.y + rect.y)
+			if (SDLWrapper::getMouse().x >= s.pos.x && SDLWrapper::getMouse().x <= s.pos.x + s.scale &&
+				SDLWrapper::getMouse().y >= s.pos.y && SDLWrapper::getMouse().y <= s.pos.y + s.scale)
 			{
 				if (SDLWrapper::getMouse().bHeld(0) && _holding == -1)
 				{
-					offsetClick.x = s.x - SDLWrapper::getMouse().x;
-					offsetClick.y = s.y - SDLWrapper::getMouse().y;
+					offsetClick.x = s.pos.x - SDLWrapper::getMouse().x;
+					offsetClick.y = s.pos.y - SDLWrapper::getMouse().y;
 					_holding = i;
 				}
 
 				if (SDLWrapper::getMouse().bDown(2) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
 				{
 					// Delete this point
-					std::vector<gobl::vec2i> newStands{};
-					std::vector<int> newScales{};
+					std::vector<Standoff> newStands{};
 					for (int r = 0; r < editRoom.standOffs.size(); r++)
 					{
 						if (i != r)
 						{
 							newStands.push_back(editRoom.standOffs.at(r));
-							newScales.push_back(editRoom.standScales.at(r));
 						}
 					}
 					editRoom.standOffs = newStands;
-					editRoom.standScales = newScales;
 
 					if (_holding == i) _holding = -1;
 
@@ -446,29 +435,33 @@ void Game::DisplayRoomEditor(float deltaTime)
 
 				if (SDLWrapper::getMouse().wheel != 0.0f)
 				{
-					editRoom.standScales.at(i) += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+					if (!SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT)) s.scale += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+					else s.order += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
 				}
 
-				SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, SDL_Color(0, 255, 255, 50));
+				SDLWrapper::DrawRect(s.pos.x, s.pos.y, s.scale, s.scale, SDL_Color(0, 255, 255, 50));
 			}
-			else SDLWrapper::DrawRect(s.x, s.y, rect.x, rect.y, SDL_Color(255, 0, 0, 50));
+			else SDLWrapper::DrawRect(s.pos.x, s.pos.y, s.scale, s.scale, SDL_Color(255, 0, 0, 50));
 
-			gameData->suspectSprite.Draw(susX, susY, s, rect);
-			SDLWrapper::DrawString("standOff: " + std::to_string(s.x) + ", " + std::to_string(s.y), s, sdl::BLACK);
+			SDLWrapper::DrawSprite(gameData->suspectSprite.name, s.pos, { s.scale, s.scale },
+				gobl::vec2<int>{ susX* gameData->suspectSprite.width, susY* gameData->suspectSprite.height },
+				gobl::vec2<int>{ gameData->suspectSprite.width, gameData->suspectSprite.height },
+				sdl::WHITE, s.order
+			);
+			SDLWrapper::DrawString("standOff: " + std::to_string(s.pos.x) + ", " + std::to_string(s.pos.y), s.pos, sdl::BLACK);
 		}
 
 		if (_holding != -1)
 		{
 			auto& s = editRoom.standOffs.at(_holding);
-			s.x = SDLWrapper::getMouse().x + offsetClick.x;
-			s.y = SDLWrapper::getMouse().y + offsetClick.y;
+			s.pos.x = SDLWrapper::getMouse().x + offsetClick.x;
+			s.pos.y = SDLWrapper::getMouse().y + offsetClick.y;
 		}
 		else
 		{
 			if (SDLWrapper::getMouse().bRelease(0) && SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
 			{
-				editRoom.standOffs.push_back(SDLWrapper::getMousePos());
-				editRoom.standScales.push_back(100);
+				editRoom.standOffs.push_back(Standoff{ .pos = SDLWrapper::getMousePos(), .scale = 100 });
 			}
 		}
 

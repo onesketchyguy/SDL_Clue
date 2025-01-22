@@ -147,9 +147,9 @@ void Loader::SaveRooms()
 			for (i = 0; i < roomData.standOffs.size(); i++)
 			{
 				room["components"].PushBack();
-				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).x;
-				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).y;
-				room["components"][off + i]["standoff"]["scale"] = roomData.standScales.at(i);
+				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
+				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
+				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
 			}
 
 			off = i;
@@ -179,7 +179,7 @@ std::vector<Room> Loader::LoadRooms()
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
 
-	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<gobl::vec2i>& standOffs, std::vector<int>& standScales, std::vector<Prop>& props)
+	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<Standoff>& standOffs, std::vector<Prop>& props)
 		{
 			int zeros = 0;
 			for (auto o = node.Begin(); o != node.End(); o++)
@@ -193,9 +193,8 @@ std::vector<Room> Loader::LoadRooms()
 
 				if ((*o).second["standoff"].Type() != 0)
 				{
-					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>();
-					standOffs.push_back({ x, y });
-					standScales.push_back((*o).second["standoff"]["scale"].As<int>());
+					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>(), scale = (*o).second["standoff"]["scale"].As<int>();
+					standOffs.push_back(Standoff{ .pos = { x, y }, .scale = scale });
 
 					if (debug) std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
 				}
@@ -245,9 +244,8 @@ std::vector<Room> Loader::LoadRooms()
 
 		if ((*it).first == "rooms")
 		{
-			std::vector<gobl::vec2i> standOffs{};
+			std::vector<Standoff> standOffs{};
 			std::vector<std::string> components{};
-			std::vector<int> standScales{};
 			std::vector<Prop> props{};
 			for (auto o = (*it).second.Begin(); o != (*it).second.End(); o++)
 			{
@@ -259,7 +257,7 @@ std::vector<Room> Loader::LoadRooms()
 				}
 				if ((*o).second["components"].Type() != 0)
 				{
-					iterateComponents((*o).second["components"], components, standOffs, standScales, props);
+					iterateComponents((*o).second["components"], components, standOffs, props);
 				}
 
 				data.push_back(Room{
@@ -268,7 +266,6 @@ std::vector<Room> Loader::LoadRooms()
 					.sprite = sprite,
 					.components = components,
 					.standOffs = standOffs,
-					.standScales = standScales,
 					.props = props
 					});
 				components.clear();
