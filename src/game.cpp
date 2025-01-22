@@ -435,8 +435,16 @@ void Game::DisplayRoomEditor(float deltaTime)
 
 				if (SDLWrapper::getMouse().wheel != 0.0f)
 				{
-					if (!SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT)) s.scale += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
-					else s.order += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+					if (SDLWrapper::getKeyboard().bHeld(SDLK_LSHIFT))
+					{
+						if (SDLWrapper::getMouse().wheel < 0)
+						{
+							int order = s.order;
+							if (s.order + static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f) > order) s.order = 0;
+						}
+						else s.order += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
+					}
+					else s.scale += static_cast<int>(SDLWrapper::getMouse().wheel * 10.0f);
 				}
 
 				SDLWrapper::DrawRect(s.pos.x, s.pos.y, s.scale, s.scale, SDL_Color(0, 255, 255, 50));

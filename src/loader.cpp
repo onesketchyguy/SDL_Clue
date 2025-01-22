@@ -111,6 +111,7 @@ void Loader::LoadWeapons()
 
 void Loader::SaveRooms()
 {
+	std::cout << "======== SAVING ROOMS NOT FUNCTIONAL ATM =======" << std::endl;
 	if (debug) std::cout << "Saving rooms..." << std::endl;
 	YAML::Node root;
 
@@ -150,6 +151,7 @@ void Loader::SaveRooms()
 				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
 				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
 				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
+				//room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
 			}
 
 			off = i;
@@ -160,6 +162,7 @@ void Loader::SaveRooms()
 				room["components"][off + i]["prop"]["x"] = roomData.props.at(i).pos.x;
 				room["components"][off + i]["prop"]["y"] = roomData.props.at(i).pos.y;
 				room["components"][off + i]["prop"]["name"] = roomData.props.at(i).name;
+				//room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
 				SerializeSprite(room["components"][off + 1]["prop"], roomData.props.at(i).sprite);
 			}
 		}
@@ -167,7 +170,7 @@ void Loader::SaveRooms()
 		curRoom++;
 	}
 
-	YAML::Serialize(root, "config/rooms.yaml");
+	YAML::Serialize(root, "config/rooms_test.yaml");
 }
 
 std::vector<Room> Loader::LoadRooms()
@@ -194,7 +197,11 @@ std::vector<Room> Loader::LoadRooms()
 				if ((*o).second["standoff"].Type() != 0)
 				{
 					int y = (*o).second["standoff"]["y"].As<int>(), x = (*o).second["standoff"]["x"].As<int>(), scale = (*o).second["standoff"]["scale"].As<int>();
-					standOffs.push_back(Standoff{ .pos = { x, y }, .scale = scale });
+					standOffs.push_back(Standoff{
+						.pos = { x, y },
+						.scale = scale,
+						// .order = (*o).second["standoff"]["order"].As<short>()
+						});
 
 					if (debug) std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
 				}
@@ -205,7 +212,8 @@ std::vector<Room> Loader::LoadRooms()
 							.name = (*o).second["prop"]["name"].As<std::string>(),
 							.sprite = {},
 							.pos = { (*o).second["prop"]["x"].As<int>(), (*o).second["prop"]["y"].As<int>() },
-							.scale = (*o).second["prop"]["scale"].As<int>()
+							.scale = (*o).second["prop"]["scale"].As<int>(),
+							// .order = (*o).second["prop"]["order"].As<short>()
 						});
 
 					ParseSprite((*o).second["prop"]["sprite"], props.back().sprite);
