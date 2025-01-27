@@ -2,6 +2,7 @@
 #include "loader.hpp"
 
 #define YAML_DEF
+#define STD_QUOTES 0
 #include "../libs/yaml.hpp"
 
 void ParseSprite(YAML::Node& node, SpriteData& data)
@@ -117,13 +118,13 @@ void Loader::LoadWeapons()
 void SerializeScene(YAML::Node& root, const std::string& name, DynamicScene& scene)//, DynamicScene& scene)
 {
 	root["name"] = name;
-	root["speaker"] = scene.speakerInitState;
+	root["speaker"] = std::string(scene.speakerInitState);
 	if (scene.room.size() > 2) root["room"] = scene.room;
 
 	for (int i = 0; i < scene.response.size(); i++)
 	{
 		root["responses"].PushBack();
-		root["responses"][i]["prompt"] = scene.response.at(i).name;
+		root["responses"][i]["prompt"] = std::string(scene.response.at(i).name);
 		if (scene.secondStep.at(i).size() > 2) root["responses"][i]["secondStep"] = scene.secondStep.at(i);
 		if (scene.outcomes.at(i).size() > 0) root["responses"][i]["outcomes"] = scene.outcomes.at(i);
 	}
@@ -155,21 +156,11 @@ void Loader::SaveRooms()
 
 		if (roomData.components.size() > 0)
 		{
-			int i;
+			int i, off = 0;
 			for (i = 0; i < roomData.components.size(); i++)
 			{
 				room["components"].PushBack();
-				room["components"][i]["type"] = roomData.components.at(i);
-			}
-
-			int off = i;
-			for (i = 0; i < roomData.standOffs.size(); i++)
-			{
-				room["components"].PushBack();
-				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
-				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
-				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
-				room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
+				room["components"][off + i]["type"] = roomData.components.at(i);
 			}
 
 			off = i;
@@ -182,14 +173,27 @@ void Loader::SaveRooms()
 				room["components"][off + i]["prop"]["name"] = roomData.props.at(i).name;
 				room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
 				SerializeSprite(room["components"][off + i]["prop"], roomData.props.at(i).sprite);
+				if (roomData.index == 's') std::cout << "component prop: " << std::to_string(off + i) << std::endl;
+			}
+
+			off = i + 1; // Couldn't tell you why, but if we increment the index here by 1 then it fixes a bug where standoffs were overlapping with the props
+			for (i = 0; i < roomData.standOffs.size(); i++)
+			{
+				if (roomData.index == 's') std::cout << "component stand off: " << std::to_string(off + i) << std::endl;
+				room["components"].PushBack();
+				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
+				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
+				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
+				room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
 			}
 		}
 
 		curRoom++;
 	}
 
-	std::cout << "WARNING! Data has been output but it is volatile and untested! Please validate it before replacing existing (known good) data!\nSaved as rooms_test.yaml" << std::endl;
-	YAML::Serialize(root, "config/rooms_test.yaml");
+	//std::cout << "WARNING! Data has been output but it is volatile and untested! Please validate it before replacing existing (known good) data!\nSaved as rooms_test.yaml" << std::endl;
+	//YAML::Serialize(root, "config/rooms_test.yaml");
+	YAML::Serialize(root, "config/rooms.yaml");
 }
 
 void LoadSceneFromNode(YAML::Node& root, SpriteData& responseSprite, std::map<std::string, DynamicScene>& scenes)
@@ -377,7 +381,6 @@ bool Loader::LoadPackage(int& s)
 	else if (s == 4)
 	{
 		// TODO: Load the player using yaml
-		SDLWrapper::LoadSprite("sprites/player.png");
 
 		// TODO: Load sounds
 

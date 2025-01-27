@@ -7,6 +7,16 @@ rooms:
   - char: 's'
     components: 
       - type: navable
+      - prop: 
+          name: lipsObj
+          order: 0
+          scale: 200
+          sprite: 
+            height: 300
+            name: sprites/response.png
+            width: 300
+          x: 100
+          y: 100
       - standoff: 
           order: 0
           scale: 240
@@ -32,19 +42,7 @@ rooms:
           scale: 260
           x: 514
           y: 483
-      - prop: 
-          name: lipsObj
-          order: 0
-          scale: 200
-          sprite: 
-            cols: 1
-            height: 300
-            name: sprites/response.png
-            rows: 1
-            width: 300
-          x: 100
-          y: 100
-        standoff: 
+      - standoff: 
           order: 0
           scale: 240
           x: 37
@@ -263,35 +261,33 @@ rooms:
     sprite: sprites/conservatory.png
 scenes: 
   - name: conversation
-    speaker: How can I help you detective?
     responses: 
-      - prompt: "What do you know about: "
-        secondStep: "suspect"
-        outcomes:
-          - "motive"
-          - "suspectMisdirect"
-      - prompt: "Pertaining to the murder weapon..."
-        secondStep: "weapon"
-        outcomes:
-          - "weapon"
-          - "weaponMisdirect"
-      - prompt: "You are under arrest!"
-        outcomes:
-          - "accuse"
-      - prompt: "Nevermind..."
-        outcomes:
-          - "end"
-  
+      - outcomes: 
+          - motive
+          - suspectMisdirect
+        prompt: "What do you know about: "
+        secondStep: suspect
+      - outcomes: 
+          - weapon
+          - weaponMisdirect
+        prompt: Pertaining to the murder weapon...
+        secondStep: weapon
+      - outcomes: 
+          - accuse
+        prompt: "You are under arrest!"
+      - outcomes: 
+          - end
+        prompt: Nevermind...
+    speaker: "How can I help you detective?"
   - name: intro
-    room: DetectivesOffice
-    speaker: "There's been a murder..."
-    responses:
-      - prompt: "Alrighty then."
+    responses: 
+      - prompt: Alrighty then.
       - prompt: "I'm on my way!"
-      - prompt: "I see..."
+      - prompt: I see...
       - prompt: "Not again!"
-  
-sprite:
-  name: "sprites/response.png"
-  width: 300
+    room: DetectivesOffice
+    speaker: There's been a murder...
+sprite: 
   height: 300
+  name: sprites/response.png
+  width: 300
