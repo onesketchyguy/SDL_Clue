@@ -261,24 +261,24 @@ void Game::DisplayInterview(float deltaTime)
 
 void Game::DisplayIntroduction(float deltaTime)
 {
-	//SDLWrapper::DrawSprite(gameData->introScene.room);
-	gameData->mapView->DrawRoom(gameData->introScene.room);
+	DynamicScene& introScene = gameData->scenes.at("intro");
+	gameData->mapView->DrawRoom(introScene.room);
 
 	const int FONT_SIZE = 32;
 	gobl::vec2i introLinePos = { 100, SDLWrapper::getScreenHeight() >> 1 };
-	SDLWrapper::DrawString(gameData->introScene.line, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
-	SDLWrapper::DrawString(gameData->introScene.line, introLinePos, sdl::WHITE, FONT_SIZE);
+	SDLWrapper::DrawString(introScene.line, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
+	SDLWrapper::DrawString(introScene.line, introLinePos, sdl::WHITE, FONT_SIZE);
 
 	static QuestionObject continueFactor = { .text = "Response ", .pos = {100, (SDLWrapper::getScreenHeight() >> 1) + 50} };
 	continueFactor.Draw();
 
 	if (continueFactor.answer.size() < 2)
 	{
-		DrawCards(gameData->introScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
+		DrawCards(introScene.response, holdIndex, holding, { 5, SDLWrapper::getScreenHeight() - (Card::CARD_RECT.y + 3) });
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (continueFactor.mouseOver()) continueFactor.answer = gameData->introScene.response.at(holdIndex).name;
+			if (continueFactor.mouseOver()) continueFactor.answer = introScene.response.at(holdIndex).name;
 			holdIndex = -1;
 		}
 	}

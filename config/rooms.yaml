@@ -263,4 +263,35 @@ rooms:
     sprite: sprites/conservatory.png
 scenes: 
   - name: conversation
+    speaker: How can I help you detective?
+    responses: 
+      - prompt: "What do you know about: "
+        secondStep: "suspect"
+        outcomes:
+          - "motive"
+          - "suspectMisdirect"
+      - prompt: "Pertaining to the murder weapon..."
+        secondStep: "weapon"
+        outcomes:
+          - "weapon"
+          - "weaponMisdirect"
+      - prompt: "You are under arrest!"
+        outcomes:
+          - "accuse"
+      - prompt: "Nevermind..."
+        outcomes:
+          - "end"
+  
   - name: intro
+    room: DetectivesOffice
+    speaker: "There's been a murder..."
+    responses:
+      - prompt: "Alrighty then."
+      - prompt: "I'm on my way!"
+      - prompt: "I see..."
+      - prompt: "Not again!"
+  
+sprite:
+  name: "sprites/response.png"
+  width: 300
+  height: 300

@@ -6,14 +6,19 @@
 
 void ParseSprite(YAML::Node& node, SpriteData& data)
 {
-	data.Load(node["name"].As<std::string>(), node["width"].As<int>(), node["height"].As<int>(), node["cols"].As<int>(), node["rows"].As<int>());
+	int rows = 1, cols = 1;
+
+	if (node["cols"].Type() != 0) cols = node["cols"].As<int>();
+	if (node["rows"].Type() != 0) rows = node["rows"].As<int>();
+
+	data.Load(node["name"].As<std::string>(), node["width"].As<int>(), node["height"].As<int>(), cols, rows);
 }
 
 void SerializeSprite(YAML::Node& root, SpriteData& data)
 {
 	root["sprite"]["name"] = data.name;
-	root["sprite"]["cols"] = data.cols;
-	root["sprite"]["rows"] = data.rows;
+	if (data.cols > 1) root["sprite"]["cols"] = data.cols;
+	if (data.rows > 1) root["sprite"]["rows"] = data.rows;
 	root["sprite"]["width"] = data.width;
 	root["sprite"]["height"] = data.height;
 }
@@ -109,21 +114,35 @@ void Loader::LoadWeapons()
 	for (int i = 0; i < names.size(); i++) data->weapons.push_back({ names.at(i), data->weaponSprite, i, Game::WEAPON });
 }
 
+void SerializeScene(YAML::Node& root, const std::string& name, DynamicScene& scene)//, DynamicScene& scene)
+{
+	root["name"] = name;
+	root["speaker"] = scene.speakerInitState;
+	if (scene.room.size() > 2) root["room"] = scene.room;
+
+	for (int i = 0; i < scene.response.size(); i++)
+	{
+		root["responses"].PushBack();
+		root["responses"][i]["prompt"] = scene.response.at(i).name;
+		if (scene.secondStep.at(i).size() > 2) root["responses"][i]["secondStep"] = scene.secondStep.at(i);
+		if (scene.outcomes.at(i).size() > 0) root["responses"][i]["outcomes"] = scene.outcomes.at(i);
+	}
+}
+
 void Loader::SaveRooms()
 {
 	if (debug) std::cout << "Saving rooms..." << std::endl;
 	YAML::Node root;
 
+	SerializeSprite(root, data->responseSprite);
+
 	int s = 0;
 	for (auto& scene : data->scenes)
 	{
 		root["scenes"].PushBack();
-		root["scenes"][s]["name"] = scene.first;
+		SerializeScene(root["scenes"][s], scene.first, scene.second);
 		s++;
 	}
-
-	root["scenes"].PushBack();
-	root["scenes"][s]["name"] = "intro"; // Always push the intro into the list
 
 	int curRoom = 0;
 	for (auto& roomData : data->rooms)
@@ -169,17 +188,67 @@ void Loader::SaveRooms()
 		curRoom++;
 	}
 
+	std::cout << "WARNING! Data has been output but it is volatile and untested! Please validate it before replacing existing (known good) data!\nSaved as rooms_test.yaml" << std::endl;
 	YAML::Serialize(root, "config/rooms_test.yaml");
+}
+
+void LoadSceneFromNode(YAML::Node& root, SpriteData& responseSprite, std::map<std::string, DynamicScene>& scenes)
+{
+	std::string sceneName = root["name"].As<std::string>();
+	//std::cout << "Loading scene " << sceneName << "..." << std::endl;
+	DynamicScene scene{};
+
+	std::string curResponse;
+	std::string secondStep;
+	std::vector<std::string> outcomes{};
+
+	if (root["speaker"].Type() != 0) scene.speakerInitState = root["speaker"].As<std::string>();
+	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse speaker!" << std::endl;
+
+	scene.room = root["room"].As<std::string>();
+
+	// Load responses
+	auto commit = [&]()
+		{
+			scene.outcomes.emplace(scene.response.size(), outcomes);
+			scene.response.push_back(Card{ curResponse, responseSprite, 0, Game::NONE });
+			scene.secondStep.push_back(secondStep);
+			//std::cout << "Commiting response " << curResponse << " with " << std::to_string(outcomes.size()) << " outcomes" << std::endl;
+			outcomes.clear();
+			curResponse.clear();
+			secondStep.clear();
+		};
+
+	if (root["responses"].Type() != 0)
+	{
+		for (auto it = root["responses"].Begin(); it != root["responses"].End(); it++)
+		{
+			curResponse = (*it).second["prompt"].As<std::string>();
+			if ((*it).second["secondStep"].Type() != 0) secondStep = (*it).second["secondStep"].As<std::string>();
+			if ((*it).second["outcomes"].Type() != 0)
+			{
+				for (auto m = (*it).second["outcomes"].Begin(); m != (*it).second["outcomes"].End(); m++)
+				{
+					outcomes.push_back((*m).second.As<std::string>());
+				}
+			}
+			commit();
+		}
+		scenes.emplace(sceneName, scene);
+	}
+	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse responses!" << std::endl;
 }
 
 std::vector<Room> Loader::LoadRooms()
 {
-	std::vector<Room> data;
+	std::vector<Room> roomData;
 	std::vector<std::string> rooms{};
 	if (debug) std::cout << "Loading rooms..." << std::endl;
 
 	YAML::Node root;
 	YAML::Parse(root, "config/rooms.yaml");
+
+	ParseSprite(root["sprite"], data->responseSprite);
 
 	auto iterateComponents = [&](YAML::Node& node, std::vector<std::string>& components, std::vector<Standoff>& standOffs, std::vector<Prop>& props)
 		{
@@ -238,14 +307,7 @@ std::vector<Room> Loader::LoadRooms()
 				if ((*o).second["name"].Type() == 0) continue;
 				std::string sceneName = (*o).second["name"].As<std::string>();
 				if (debug) std::cout << "Scene detected: " << sceneName << std::endl;
-				if (sceneName == "intro") // FIXME: Be more dynamic, don't do this
-				{
-					LoadIntroScene();
-				}
-				else
-				{
-					LoadScene(sceneName);
-				}
+				LoadSceneFromNode((*o).second, data->responseSprite, data->scenes);
 			}
 		}
 
@@ -267,7 +329,7 @@ std::vector<Room> Loader::LoadRooms()
 					iterateComponents((*o).second["components"], components, standOffs, props);
 				}
 
-				data.push_back(Room{
+				roomData.push_back(Room{
 					.index = (*o).second["char"].As<char>(),
 					.name = (*o).second["name"].As<std::string>(),
 					.sprite = sprite,
@@ -284,92 +346,7 @@ std::vector<Room> Loader::LoadRooms()
 	}
 
 	if (debug) std::cout << "Done loading rooms.." << std::endl;
-	return data;
-}
-
-void Loader::LoadIntroScene()
-{
-	if (debug) std::cout << "Loading intro scene..." << std::endl;
-	std::string spriteDir = "";
-	int width, height, cols = 1, rows = 1;
-
-	YAML::Node root;
-	YAML::Parse(root, "config/intro.yaml");
-
-	for (auto it = root.Begin(); it != root.End(); it++)
-	{
-		if ((*it).first == "responses")
-		{
-			for (auto m = (*it).second.Begin(); m != (*it).second.End(); m++)
-			{
-				data->introScene.response.push_back({ (*m).second.As<std::string>(), data->responseSprite, 0, Game::NONE });
-			}
-		}
-		else if ((*it).first == "speakerLine") data->introScene.line = (*it).second.As<std::string>();
-		else if ((*it).first == "room")
-		{
-			data->introScene.room = (*it).second.As<std::string>();
-		}
-		else if ((*it).first == "responseSprite")
-		{
-			spriteDir = (*it).second["name"].As<std::string>();
-			width = (*it).second["width"].As<int>();
-			height = (*it).second["height"].As<int>();
-			cols = (*it).second["col"].As<int>();
-			rows = (*it).second["row"].As<int>();
-		}
-	}
-
-	data->responseSprite.Load(spriteDir, width, height, cols, rows);
-}
-
-void Loader::LoadScene(std::string sceneName)
-{
-	std::string dir = "config/" + sceneName + ".yaml";
-	if (debug) std::cout << "Loading scene " << dir << "..." << std::endl;
-
-	YAML::Node root;
-	YAML::Parse(root, dir.c_str());
-	DynamicScene scene{};
-
-	std::string curResponse;
-	std::string secondStep;
-	std::vector<std::string> outcomes{};
-
-	if (root["speaker"].Type() != 0) scene.speakerInitState = root["speaker"].As<std::string>();
-	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse speaker!" << std::endl;
-
-	// Load responses
-	auto commit = [&]()
-		{
-			scene.outcomes.emplace(scene.response.size(), outcomes);
-			scene.response.push_back(Card{ curResponse, data->responseSprite, 0, Game::NONE });
-			scene.secondStep.push_back(secondStep);
-			if (debug) std::cout << "Commiting response " << curResponse << " with " << std::to_string(outcomes.size()) << " outcomes" << std::endl;
-			outcomes.clear();
-			curResponse.clear();
-			secondStep.clear();
-		};
-
-	if (root["responses"].Type() != 0)
-	{
-		for (auto it = root["responses"].Begin(); it != root["responses"].End(); it++)
-		{
-			if (outcomes.size() > 0) commit();
-			curResponse = (*it).second["prompt"].As<std::string>();
-			if ((*it).second["secondStep"].Type() != 0) secondStep = (*it).second["secondStep"].As<std::string>();
-			if ((*it).second["outcomes"].Type() != 0)
-			{
-				for (auto m = (*it).second["outcomes"].Begin(); m != (*it).second["outcomes"].End(); m++)
-				{
-					outcomes.push_back((*m).second.As<std::string>());
-				}
-			}
-		}
-		commit();
-		data->scenes.emplace(sceneName, scene);
-	}
-	else std::cout << "CRITICAL ERROR! Cannot load scene because cannot parse responses!" << std::endl;
+	return roomData;
 }
 
 bool Loader::LoadPackage(int& s)

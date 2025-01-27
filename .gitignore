@@ -38,3 +38,4 @@
 *vcxproj*
 *.vsidx
 **x64**
+*_test.yaml

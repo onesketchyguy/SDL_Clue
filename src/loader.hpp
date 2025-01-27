@@ -8,15 +8,11 @@
 #include "suspect.hpp"
 #include "mapView.hpp"
 
-struct StaticScene
+struct DynamicScene
 {
 	std::string room;
 	std::string line;
 	std::vector<Card> response;
-};
-
-struct DynamicScene : public StaticScene
-{
 	std::map<int, std::vector<std::string>> outcomes;
 	std::vector<std::string> secondStep;
 	std::string speakerInitState = "";
@@ -42,7 +38,6 @@ public:
 		SpriteData suspectSprite;
 		SpriteData weaponSprite;
 
-		StaticScene introScene{};
 		std::map<std::string, DynamicScene> scenes{};
 	};
 
@@ -59,8 +54,6 @@ private:
 	void LoadWeapons();
 	void SaveRooms();
 	std::vector<Room> LoadRooms();
-	void LoadIntroScene();
-	void LoadScene(std::string sceneName);
 
 	GamePack* data = nullptr;
 };
