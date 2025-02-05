@@ -2,7 +2,7 @@
 #include "loader.hpp"
 
 #define YAML_DEF
-#define STD_QUOTES 0
+#define STD_QUOTES 0 // Casually disables a feature that I myself implemented
 #include "../libs/yaml.hpp"
 
 void ParseSprite(YAML::Node& node, SpriteData& data)

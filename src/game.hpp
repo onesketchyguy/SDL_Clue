@@ -21,10 +21,10 @@ public:
 	bool OnUserUpdate(float deltaTime);
 private:
 	std::vector<QuestionObject> questions{
-		{.text = "Who?", .pos = {150, 100}},
-		{.text = "What?", .pos = {150, 140}},
-		{.text = "Where?", .pos = {150, 180}},
-		{.text = "Why?", .pos = {150, 220}}
+		{.text = "Who?", .pos = {50, 100}},
+		{.text = "What?", .pos = {300, 100}},
+		{.text = "Where?", .pos = {75, 300}},
+		{.text = "Why?", .pos = {325, 300}}
 	};
 
 	int interviewing = 0;

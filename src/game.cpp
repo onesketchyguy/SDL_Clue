@@ -6,6 +6,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 {
 	// Ensure T is derived from Card
 	static_assert(std::is_base_of<Card, T>::value, "T must be derived from Card");
+	static gobl::vec2i clickOff = {};
 
 	const int SPACING = 15 * 4;
 	for (int i = 0; i < cards.size(); i++)
@@ -15,7 +16,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 
 		if (holdIndex == i && holding == (Game::HoldingType)cards.at(0).type)
 		{
-			item.Draw(SDLWrapper::getMousePos() + gobl::vec2<int>{ 0, -16 });
+			item.Draw(SDLWrapper::getMousePos() + clickOff);
 
 			if (SDLWrapper::getMouse().y > pos.y - 20) pos.x += (SPACING * 2) + 10;
 		}
@@ -33,6 +34,7 @@ gobl::vec2i DrawCards(std::vector<T>& cards, int& holdIndex, Game::HoldingType& 
 				}
 				else if (SDLWrapper::getMouse().bHeld(0) && holdIndex == -1)
 				{
+					clickOff = pos - SDLWrapper::getMousePos();
 					holdIndex = i;
 					holding = (Game::HoldingType)item.type;
 				}
@@ -77,13 +79,14 @@ void Game::DisplayAccusing()
 		{
 			if (questions.at(hoverQ).text == "Who?" && holding == SUSPECT)
 			{
+				questions.at(hoverQ).card = &gameData->suspects.at(holdIndex);
 				questions.at(hoverQ).answer = gameData->suspects.at(holdIndex).name;
 				accusing = holdIndex;
 			}
 			if (questions.at(hoverQ).text == "What?" && holding == WEAPON)
 			{
-				questions.at(hoverQ).answer = gameData->weapons.at(holdIndex).name;
-				if (questions.at(hoverQ).answer == gameData->weapons.at(gameData->weapon).name) foundWhat = true;
+				questions.at(hoverQ).card = &gameData->weapons.at(holdIndex);
+				if (questions.at(hoverQ).card == &gameData->weapons.at(gameData->weapon)) foundWhat = true;
 				else foundWhat = false;
 			}
 		}
@@ -97,9 +100,13 @@ void Game::DisplayAccusing()
 		else
 		{
 			accusing = -1;
-			for (auto& q : questions) q.answer = "";
+			for (auto& q : questions)
+			{
+				q.answer = "";
+				q.card = nullptr;
+			}
 		}
-	}, .text = "Accuse", .pos = questions.back().pos + gobl::vec2<int>{ 0, 50} };
+	}, .text = "Accuse", .pos = questions.back().pos + gobl::vec2<int>{ 150, 150} };
 	btn.Draw();
 }
 
@@ -152,6 +159,7 @@ void Game::DisplayInterview(float deltaTime)
 
 	gameData->suspects.at(interviewing).DrawMini(suspectPos, 400);
 	speachBubblePos.y += 25;
+	SDLWrapper::DrawRect(speachBubblePos.x, speachBubblePos.y, curScene.speakerState.size() * 7, 16, sdl::GREY);
 	SDLWrapper::DrawString(curScene.speakerState, speachBubblePos, sdl::WHITE);
 	speachBubblePos.y += 25;
 
@@ -164,7 +172,11 @@ void Game::DisplayInterview(float deltaTime)
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (responseBox.mouseOver()) responseBox.answer = gameData->scenes.at("conversation").response.at(holdIndex).name;
+			if (responseBox.mouseOver())
+			{
+				responseBox.card = &gameData->scenes.at("conversation").response.at(holdIndex);
+				responseBox.answer = gameData->scenes.at("conversation").response.at(holdIndex).name;
+			}
 
 			curScene.outcomeState = holdIndex;
 
@@ -185,7 +197,11 @@ void Game::DisplayInterview(float deltaTime)
 
 					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 					{
-						if (responseBox.mouseOver()) responseBox.answer = gameData->weapons.at(holdIndex).name;
+						if (responseBox.mouseOver())
+						{
+							responseBox.card = &gameData->weapons.at(holdIndex);
+							responseBox.answer = gameData->weapons.at(holdIndex).name;
+						}
 						curScene.finalState = holdIndex;
 
 						holdIndex = -1;
@@ -204,7 +220,11 @@ void Game::DisplayInterview(float deltaTime)
 
 					if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 					{
-						if (responseBox.mouseOver()) responseBox.answer = gameData->weapons.at(holdIndex).name;
+						if (responseBox.mouseOver())
+						{
+							responseBox.card = &gameData->weapons.at(holdIndex);
+							responseBox.answer = gameData->weapons.at(holdIndex).name;
+						}
 						curScene.finalState = holdIndex;
 
 						holdIndex = -1;
@@ -255,6 +275,7 @@ void Game::DisplayInterview(float deltaTime)
 
 			curScene.finalState = -1;
 			responseBox.answer = "";
+			responseBox.card = nullptr;
 		}
 	}
 }
@@ -265,9 +286,9 @@ void Game::DisplayIntroduction(float deltaTime)
 	gameData->mapView->DrawRoom(introScene.room);
 
 	const int FONT_SIZE = 32;
-	gobl::vec2i introLinePos = { 100, SDLWrapper::getScreenHeight() >> 1 };
-	SDLWrapper::DrawString(introScene.line, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
-	SDLWrapper::DrawString(introScene.line, introLinePos, sdl::WHITE, FONT_SIZE);
+	gobl::vec2i introLinePos = { 5, SDLWrapper::getScreenHeight() >> 1 };
+	SDLWrapper::DrawString(introScene.speakerInitState, introLinePos + gobl::vec2i{ -2, 2 }, sdl::DARK_GREY, FONT_SIZE); // Shadow
+	SDLWrapper::DrawString(introScene.speakerInitState, introLinePos, sdl::WHITE, FONT_SIZE);
 
 	static QuestionObject continueFactor = { .text = "Response ", .pos = {100, (SDLWrapper::getScreenHeight() >> 1) + 50} };
 	continueFactor.Draw();
@@ -278,7 +299,11 @@ void Game::DisplayIntroduction(float deltaTime)
 
 		if (SDLWrapper::getMouse().bRelease(0) && holdIndex != -1)
 		{
-			if (continueFactor.mouseOver()) continueFactor.answer = introScene.response.at(holdIndex).name;
+			if (continueFactor.mouseOver())
+			{
+				continueFactor.answer = introScene.response.at(holdIndex).name;
+				continueFactor.card = &introScene.response.at(holdIndex);
+			}
 			holdIndex = -1;
 		}
 	}

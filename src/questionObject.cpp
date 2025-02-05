@@ -2,19 +2,31 @@
 
 void QuestionObject::Draw()
 {
-	gobl::vec2<int> repos = { ((int32_t)text.size() * 8) + 2 , 3 };
-	rect = { ((int32_t)text.size() * 8) + 20 + ((int32_t)answer.size() * 8) + 4, 24 };
+	gobl::vec2i textOffset = { ((int32_t)text.size() * 6) + 2 , 3 };
+	rect = { ((int32_t)text.size() * 8), 24 };
 
 	bool hovered = mouseOver();
-	SDLWrapper::DrawRect(pos.x - repos.x, pos.y - repos.y, rect.x, rect.y, hovered ? sdl::GREY : sdl::WHITE);
-	SDLWrapper::OutlineRect(pos.x - repos.x, pos.y - repos.y, rect.x, rect.y, hovered ? sdl::BLACK : sdl::DARK_GREY);
-	SDLWrapper::DrawString(text, { pos.x - (repos.x - 2), pos.y }, sdl::BLACK);
-	SDLWrapper::DrawString(answer, { pos.x + 16, pos.y }, sdl::BLACK);
-	SDLWrapper::DrawLine({ pos.x + 6.0f, pos.y + rect.y - 8.0f }, { pos.x + (8.0f * (float)answer.size()), pos.y + rect.y - 8.0f }, sdl::BLACK);
+	SDLWrapper::DrawRect(pos.x, pos.y - textOffset.y, rect.x, rect.y, hovered ? sdl::GREY : sdl::WHITE);
+	SDLWrapper::OutlineRect(pos.x, pos.y - textOffset.y, rect.x, rect.y, hovered ? sdl::BLACK : sdl::DARK_GREY);
+	SDLWrapper::DrawString(text, { pos.x + 2, pos.y }, sdl::BLACK);
+
+	gobl::vec2i cardSlotPos = { pos.x, pos.y + rect.y - 4 };
+	if (card != nullptr)
+	{
+		card->Draw(cardSlotPos);
+	}
+	else
+	{
+		// Draw the actual card slot
+		SDLWrapper::DrawRect(cardSlotPos.x, cardSlotPos.y, Card::CARD_RECT.x, Card::CARD_RECT.y, sdl::GREY);
+		SDLWrapper::OutlineRect(cardSlotPos.x, cardSlotPos.y, Card::CARD_RECT.x, Card::CARD_RECT.y, sdl::BLACK);
+		SDLWrapper::OutlineRect(cardSlotPos.x + 1, cardSlotPos.y + 1, Card::CARD_RECT.x - 2, Card::CARD_RECT.y - 2, sdl::DARK_GREY);
+		SDLWrapper::DrawRect(cardSlotPos.x + 10, cardSlotPos.y + 10, Card::CARD_RECT.x - 20, Card::CARD_RECT.y - 20, sdl::LIGHT_GREY);
+	}
 }
 
 bool QuestionObject::mouseOver()
 {
 	// Check if the mouse is over the question object
-	return SDLWrapper::getMouse().x < pos.x + rect.x && SDLWrapper::getMouse().x > pos.x - (text.size() * 6) && SDLWrapper::getMouse().y < pos.y + rect.y && SDLWrapper::getMouse().y > pos.y;
+	return SDLWrapper::getMouse().x < pos.x + Card::CARD_RECT.x && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().y < pos.y + rect.y + Card::CARD_RECT.y && SDLWrapper::getMouse().y > pos.y;
 }
