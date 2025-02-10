@@ -40,8 +40,7 @@ void MapView::DrawCharacters(float deltaTime)
 			gobl::vec2<int>{ suspects[i].spriteData.width, suspects[i].spriteData.height },
 			sdl::WHITE, standOff.order);
 
-		if (SDLWrapper::getMouse().y > standOff.pos.y && SDLWrapper::getMouse().y < standOff.pos.y + standOff.scale &&
-			SDLWrapper::getMouse().x > standOff.pos.x && SDLWrapper::getMouse().x < standOff.pos.x + standOff.scale)
+		if (SDLWrapper::getMouse().over(standOff.pos, gobl::vec2i{ standOff.scale, standOff.scale }))
 		{
 			cursorTip = suspects[i].name;
 			if (SDLWrapper::getMouse().bDown(0)) interviewing = i;

@@ -28,5 +28,6 @@ void QuestionObject::Draw()
 bool QuestionObject::mouseOver()
 {
 	// Check if the mouse is over the question object
-	return SDLWrapper::getMouse().x < pos.x + Card::CARD_RECT.x && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().y < pos.y + rect.y + Card::CARD_RECT.y && SDLWrapper::getMouse().y > pos.y;
+	gobl::vec2i scale = { Card::CARD_RECT.x, rect.y + Card::CARD_RECT.y };
+	return SDLWrapper::getMouse().over(pos, scale);
 }

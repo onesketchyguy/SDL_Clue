@@ -9,7 +9,7 @@ gobl::vec2i Button::getEnd()
 void Button::Draw()
 {
 	gobl::vec2<int> size = gobl::vec2<int>{ static_cast<int>(text.size()) * 8, 20 };
-	bool mouseOver = (SDLWrapper::getMouse().y > pos.y && SDLWrapper::getMouse().y < pos.y + size.y && SDLWrapper::getMouse().x > pos.x && SDLWrapper::getMouse().x < pos.x + size.x);
+	bool mouseOver = SDLWrapper::getMouse().over(pos, size);
 	SDL_Color col = mouseOver ? sdl::GREY : sdl::WHITE;
 
 	if (mouseOver && SDLWrapper::getMouse().bDown(0)) onClick();

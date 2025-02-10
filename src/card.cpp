@@ -23,8 +23,7 @@ void SpriteData::Load(std::string dir, int sprWidth, int sprHeight, int sprCols,
 
 bool Card::mouseOver(gobl::vec2<int> pos)
 {
-	return SDLWrapper::getMouse().x < pos.x + CARD_RECT.x && SDLWrapper::getMouse().x > pos.x &&
-		SDLWrapper::getMouse().y < pos.y + CARD_RECT.y && SDLWrapper::getMouse().y > pos.y;
+	return SDLWrapper::getMouse().over(pos, CARD_RECT);
 }
 
 void Card::Draw(gobl::vec2<int> pos)

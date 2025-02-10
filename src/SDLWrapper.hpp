@@ -124,6 +124,7 @@ struct Mouse : public ButtonInterface
 	int y;
 	float wheel;
 	bool visible = true;
+	bool over(gobl::vec2i pos, gobl::vec2i scale);
 };
 
 class SDLWrapper
@@ -141,9 +142,10 @@ private:
 	SDL_Color clearColor;
 
 	bool usingSortOrder = false;
+	float renderScale;
 	static const std::string DEFAULT_FONT;
 public:
-	SDLWrapper(const char* appName, int width, int height);
+	SDLWrapper(const char* appName, int width, int height, float scale = 1.0f);
 	~SDLWrapper();
 
 	static int InitSDL(const char* appName);
@@ -172,6 +174,7 @@ public:
 
 	static std::function<void(const char*)> onFileDropped;
 	static float deltaTime();
+	const static float getRenderScale() { return instance->renderScale; }
 
 	template <typename T>
 	static T* getType(const std::string&);

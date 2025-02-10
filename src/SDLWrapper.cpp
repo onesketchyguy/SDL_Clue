@@ -12,6 +12,18 @@ std::function<void(const char*)> SDLWrapper::onFileDropped{};
 
 const std::string SDLWrapper::DEFAULT_FONT = "fonts/Deutsch.ttf";
 
+bool Mouse::over(gobl::vec2i pos, gobl::vec2i scale)
+{
+	pos.x *= SDLWrapper::getRenderScale();
+	pos.y *= SDLWrapper::getRenderScale();
+
+	scale.x *= SDLWrapper::getRenderScale();
+	scale.y *= SDLWrapper::getRenderScale();
+
+	return (x >= pos.x && x <= pos.x + scale.x 
+		&& y >= pos.y && y <= pos.y + scale.y);
+}
+
 // MARK: Sprite def
 class Renderable
 {
@@ -103,7 +115,7 @@ public:
 // MARK: This pass
 std::vector<Renderable*> renderables{};
 
-SDLWrapper::SDLWrapper(const char* appName, int width, int height) : screenWidth(width), screenHeight(height)
+SDLWrapper::SDLWrapper(const char* appName, int width, int height, float scale) : screenWidth(width), screenHeight(height), renderScale(scale)
 {
 	instance = this;
 
@@ -147,7 +159,7 @@ int SDLWrapper::InitSDL(const char* appName)
 	{
 		int windowHints = SDL_WINDOW_SHOWN, rendererFlags = SDL_RENDERER_ACCELERATED;
 
-		window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, instance->screenWidth, instance->screenHeight, windowHints);
+		window = SDL_CreateWindow(appName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, instance->screenWidth * instance->renderScale, instance->screenHeight * instance->renderScale, windowHints);
 		if (window == NULL)
 		{
 			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -373,7 +385,7 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i s
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture
 
-	Sprite* sprite = new Sprite(n, pos.x, pos.y, scale.x, scale.y, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col);
+	Sprite* sprite = new Sprite(n, pos.x * instance->renderScale, pos.y * instance->renderScale, scale.x * instance->renderScale, scale.y * instance->renderScale, srcPos.x, srcPos.y, srcScale.x, srcScale.y, col);
 	if (order != 0)
 	{
 		sprite->AssignOrder(order);
@@ -384,22 +396,22 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i s
 
 void SDLWrapper::DrawRect(int x, int y, int w, int h, SDL_Color col)
 {
-	renderables.push_back(new Renderable(x, y, w, h, col));
+	renderables.push_back(new Renderable(x * instance->renderScale, y * instance->renderScale, w * instance->renderScale, h * instance->renderScale, col));
 }
 
 void SDLWrapper::OutlineRect(int x, int y, int w, int h, SDL_Color col)
 {
-	renderables.push_back(new Renderable(x, y, w, h, col, false));
+	renderables.push_back(new Renderable(x * instance->renderScale, y * instance->renderScale, w * instance->renderScale, h * instance->renderScale, col, false));
 }
 
 void SDLWrapper::DrawCircle(int x, int y, float rad, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	renderables.push_back(new Circle(x, y, rad, { r, g, b, a }));
+	renderables.push_back(new Circle(x * instance->renderScale, y * instance->renderScale, rad, { r, g, b, a }));
 }
 
 void SDLWrapper::OutlineCircle(int x, int y, float rad, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	renderables.push_back(new Circle(x, y, rad, { r, g, b, a }, false));
+	renderables.push_back(new Circle(x * instance->renderScale, y * instance->renderScale, rad, { r, g, b, a }, false));
 }
 
 void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color col, const uint8_t& fontSize, const std::string& font)
@@ -407,12 +419,12 @@ void SDLWrapper::DrawString(const std::string& str, gobl::vec2i pos, SDL_Color c
 	if (instance->fonts.count(font) <= 0)
 		instance->fonts.emplace(font, TTF_OpenFont(font.c_str(), fontSize));
 
-	renderables.push_back(new Text(str, pos.x, pos.y, col, font, fontSize));
+	renderables.push_back(new Text(str, pos.x * instance->renderScale, pos.y * instance->renderScale, col, font, fontSize * instance->renderScale));
 }
 
 void SDLWrapper::DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color col)
 {
-	renderables.push_back(new Line(a.x, a.y, b.x, b.y, col));
+	renderables.push_back(new Line(a.x * instance->renderScale, a.y * instance->renderScale, b.x * instance->renderScale, b.y * instance->renderScale, col));
 }
 
 void SDLWrapper::SetClear(const SDL_Color& col)
