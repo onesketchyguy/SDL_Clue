@@ -26,8 +26,8 @@ void MapView::DrawCharacters(float deltaTime)
 		if (suspectPos[i] != playerRoom) continue;
 
 		int roomIndex = getRoomIndex(suspectPos[i]);
-		if (roomIndex == -1) throw std::exception("Reached a room index that does not exist!");
-		if (inRoom >= rooms.at(roomIndex).standOffs.size()) throw std::exception("Too many in room and not enough standoffs!");
+		if (roomIndex == -1) throw std::runtime_error("Reached a room index that does not exist!");
+		if (inRoom >= rooms.at(roomIndex).standOffs.size()) throw std::runtime_error("Too many in room and not enough standoffs!");
 
 		Standoff& standOff = rooms.at(roomIndex).standOffs.at(inRoom);
 		inRoom++;
@@ -178,7 +178,7 @@ void MapView::DrawRoom(std::string name, bool populate)
 		{
 			if (r.name == name)
 			{
-				if (r.sprite.size() < 2) throw std::exception("Tried to draw a room without a sprite!");
+				if (r.sprite.size() < 2) throw std::runtime_error("Tried to draw a room without a sprite!");
 				SDLWrapper::DrawSprite(r.sprite);
 				found = true;
 				break;

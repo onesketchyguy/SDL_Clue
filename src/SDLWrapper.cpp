@@ -365,10 +365,10 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, SDL_Color col
 void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, SDL_Color col, short order) { DrawSprite(n, pos, scale, gobl::vec2i{ 0, 0 }, gobl::vec2i{ 0, 0 }, col, order); }
 void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color col, short order)
 {
-	if (n.size() < 2) throw std::exception("Cannot draw: Unable to parse empty string!");
+	if (n.size() < 2) throw std::runtime_error("Cannot draw: Unable to parse empty string!");
 	if (instance->textures.count(n) <= 0)
 	{
-		throw std::exception(("Cannot draw: " + n + " because it has not been loaded!").c_str());;
+		throw std::runtime_error(("Cannot draw: " + n + " because it has not been loaded!").c_str());;
 	}
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture

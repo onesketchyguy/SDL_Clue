@@ -261,7 +261,7 @@ std::vector<Room> Loader::LoadRooms()
 			{
 				if ((*o).second.Type() == 0)
 				{
-					if (zeros >= 100) throw std::exception("YAML Encountered excessive null types!");
+					if (zeros >= 100) throw std::runtime_error("YAML Encountered excessive null types!");
 					zeros++;
 					continue;
 				}
