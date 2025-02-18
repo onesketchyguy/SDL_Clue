@@ -44,8 +44,11 @@ public:
 	bool debug = false;
 
 	bool LoadPackage(int& s);
-	GamePack* getData();
 	void SaveData();
+	GamePack* getData();
+
+	static void LoadWindowState(std::string& title, unsigned int& w, unsigned int& h, float& scale);
+	static void SaveWindowState(std::string title, unsigned int w, unsigned int h, float scale);
 private:
 
 	void SaveSuspects();

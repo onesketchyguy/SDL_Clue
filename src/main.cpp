@@ -5,8 +5,8 @@
 
 int main(int argc, char* argv[])
 {
-	SDLWrapper* wrapper = new SDLWrapper{ "The butler didn't do it", 800, 800, .8f };
 	Game game{};
+	SDLWrapper* wrapper = new SDLWrapper{ game.title.c_str(), game.windowWidth, game.windowHeight, game.renderScale};
 
 	for (int i = 1; i < argc; i++)
 	{

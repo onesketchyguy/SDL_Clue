@@ -421,3 +421,24 @@ void Loader::SaveData()
 }
 
 Loader::GamePack* Loader::getData() { return data; }
+
+void Loader::LoadWindowState(std::string& title, unsigned int& w, unsigned int& h, float& scale)
+{
+	YAML::Node root;
+	YAML::Parse(root, "config/window.yaml");
+	title = root["title"].As<std::string>();
+	w = root["w"].As<int>();
+	h = root["h"].As<int>();
+	scale = root["renderScale"].As<float>();
+}
+
+void Loader::SaveWindowState(std::string title, unsigned int w, unsigned int h, float scale)
+{
+	YAML::Node root;
+	root["title"] = title;
+	root["w"] = w;
+	root["h"] = h;
+	root["renderScale"] = scale;
+
+	YAML::Serialize(root, "config/window.yaml");
+}

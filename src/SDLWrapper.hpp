@@ -145,7 +145,7 @@ private:
 	float renderScale;
 	static const std::string DEFAULT_FONT;
 public:
-	SDLWrapper(const char* appName, int width, int height, float scale = 1.0f);
+	SDLWrapper(const char* appName, unsigned int width, unsigned int height, float scale = 1.0f);
 	~SDLWrapper();
 
 	static int InitSDL(const char* appName);

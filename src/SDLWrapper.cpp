@@ -115,7 +115,7 @@ public:
 // MARK: This pass
 std::vector<Renderable*> renderables{};
 
-SDLWrapper::SDLWrapper(const char* appName, int width, int height, float scale) : screenWidth(width), screenHeight(height), renderScale(scale)
+SDLWrapper::SDLWrapper(const char* appName, unsigned int width, unsigned int height, float scale) : screenWidth(width), screenHeight(height), renderScale(scale)
 {
 	instance = this;
 

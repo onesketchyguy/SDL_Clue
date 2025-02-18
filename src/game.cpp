@@ -617,3 +617,16 @@ bool Game::OnUserUpdate(float deltaTime)
 
 	return true;
 }
+
+Game::Game() 
+{
+	Loader::LoadWindowState(title, windowWidth, windowHeight, renderScale);
+}
+
+Game::~Game()
+{
+	delete gameData;
+	gameData = nullptr;
+
+	Loader::SaveWindowState(title, windowWidth, windowHeight, renderScale);
+}

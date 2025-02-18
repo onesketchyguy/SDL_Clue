@@ -17,6 +17,13 @@ public:
 	enum HoldingType { NONE, SUSPECT, WEAPON };
 	bool debug = false;
 
+	std::string title = "A video game";
+	unsigned int windowWidth = 800, windowHeight = 800;
+	float renderScale = 1.0f;
+
+	Game();
+	~Game();
+
 	void OnStart();
 	bool OnUserUpdate(float deltaTime);
 private:
@@ -47,8 +54,8 @@ private:
 
 	GameState state = Introduction;
 
-	Loader loader;
-	bool loaded;
+	Loader loader{};
+	bool loaded = false;
 
 	int holdIndex = -1;
 	HoldingType holding = NONE;
