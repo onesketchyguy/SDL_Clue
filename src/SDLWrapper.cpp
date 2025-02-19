@@ -177,6 +177,8 @@ int SDLWrapper::InitSDL(const char* appName)
 
 			return 3; // 3: Indicates a failure with the renderer
 		}
+
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	}
 
 	// Push all our new objects onto the stack
@@ -314,6 +316,8 @@ bool SDLWrapper::Update()
 			if (sprite != nullptr && instance->textures[sprite->getID()] != nullptr)
 			{
 				SDL_Texture* texture = static_cast<SDL_Texture*>(instance->textures[sprite->getID()]);
+				SDL_SetTextureColorMod(texture, o->color.r, o->color.g, o->color.b);
+				SDL_SetTextureAlphaMod(texture, o->color.a);
 				SDL_RenderCopy(renderer, texture, (sprite->src.w == 0 ? NULL : &sprite->src), &sprite->dest);
 				// We don't need to destroy this texture because it's just a reference to a library of textures
 			}
