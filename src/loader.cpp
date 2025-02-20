@@ -7,12 +7,14 @@
 
 void ParseSprite(YAML::Node& node, SpriteData& data)
 {
-	int rows = 1, cols = 1;
+	int rows = 1, cols = 1, w = 0, h = 0;
 
 	if (node["cols"].Type() != 0) cols = node["cols"].As<int>();
 	if (node["rows"].Type() != 0) rows = node["rows"].As<int>();
+	if (node["width"].Type() != 0) w = node["width"].As<int>();
+	if (node["height"].Type() != 0) h = node["height"].As<int>();
 
-	data.Load(node["name"].As<std::string>(), node["width"].As<int>(), node["height"].As<int>(), cols, rows);
+	data.Load(node["name"].As<std::string>(), w, h, cols, rows);
 }
 
 void SerializeSprite(YAML::Node& root, SpriteData& data)
@@ -20,8 +22,8 @@ void SerializeSprite(YAML::Node& root, SpriteData& data)
 	root["sprite"]["name"] = data.name;
 	if (data.cols > 1) root["sprite"]["cols"] = data.cols;
 	if (data.rows > 1) root["sprite"]["rows"] = data.rows;
-	root["sprite"]["width"] = data.width;
-	root["sprite"]["height"] = data.height;
+	if (data.width > 0) root["sprite"]["width"] = data.width;
+	if (data.height > 0) root["sprite"]["height"] = data.height;
 }
 
 void Loader::SaveSuspects()
@@ -171,7 +173,8 @@ void Loader::SaveRooms()
 				room["components"][off + i]["prop"]["x"] = roomData.props.at(i).pos.x;
 				room["components"][off + i]["prop"]["y"] = roomData.props.at(i).pos.y;
 				room["components"][off + i]["prop"]["name"] = roomData.props.at(i).name;
-				room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
+				if (roomData.props.at(i).onClick.size() > 0) room["components"][off + i]["prop"]["onclick"] = roomData.props.at(i).onClick;
+				if (roomData.props.at(i).order != 0) room["components"][off + i]["prop"]["order"] = roomData.props.at(i).order;
 				SerializeSprite(room["components"][off + i]["prop"], roomData.props.at(i).sprite);
 				if (roomData.index == 's') std::cout << "component prop: " << std::to_string(off + i) << std::endl;
 			}
@@ -179,12 +182,12 @@ void Loader::SaveRooms()
 			off = i + 1; // Couldn't tell you why, but if we increment the index here by 1 then it fixes a bug where standoffs were overlapping with the props
 			for (i = 0; i < roomData.standOffs.size(); i++)
 			{
-				if (roomData.index == 's') std::cout << "component stand off: " << std::to_string(off + i) << std::endl;
+				// if (roomData.index == 's') std::cout << "component stand off: " << std::to_string(off + i) << std::endl;
 				room["components"].PushBack();
 				room["components"][off + i]["standoff"]["x"] = roomData.standOffs.at(i).pos.x;
 				room["components"][off + i]["standoff"]["y"] = roomData.standOffs.at(i).pos.y;
 				room["components"][off + i]["standoff"]["scale"] = roomData.standOffs.at(i).scale;
-				room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
+				if (roomData.standOffs.at(i).order != 0) room["components"][off + i]["standoff"]["order"] = roomData.standOffs.at(i).order;
 			}
 		}
 
@@ -272,7 +275,7 @@ std::vector<Room> Loader::LoadRooms()
 					standOffs.push_back(Standoff{
 						.pos = { x, y },
 						.scale = scale,
-						// .order = (*o).second["standoff"]["order"].As<short>()
+						.order = (*o).second["standoff"]["order"].As<short>()
 						});
 
 					if (debug) std::cout << "Adding standoff: " << std::to_string(x) << ", " << std::to_string(y) << std::endl;
@@ -282,12 +285,10 @@ std::vector<Room> Loader::LoadRooms()
 				{
 					props.push_back(Prop{
 							.name = (*o).second["prop"]["name"].As<std::string>(),
-							.sprite = {},
-							.pos = { (*o).second["prop"]["x"].As<int>(), (*o).second["prop"]["y"].As<int>() },
-							.scale = (*o).second["prop"]["scale"].As<int>(),
-							// .order = (*o).second["prop"]["order"].As<short>()
+							.onClick = (*o).second["prop"]["onclick"].As<std::string>(),
 						});
-
+					props.back().pos = { (*o).second["prop"]["x"].As<int>(), (*o).second["prop"]["y"].As<int>() };
+					props.back().scale = (*o).second["prop"]["scale"].As<int>();
 					ParseSprite((*o).second["prop"]["sprite"], props.back().sprite);
 
 					if (debug) std::cout << "Adding prop: " << props.back().name << std::endl;

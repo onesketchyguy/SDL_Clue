@@ -357,12 +357,17 @@ bool SDLWrapper::Update()
 int SDLWrapper::LoadSprite(const std::string& path)
 {
 	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", path.c_str());
-	SDL_Texture* texture = IMG_LoadTexture(getType<SDL_Renderer>("renderer"), path.c_str());
 
-	if (instance->textures.count(path) <= 0) instance->textures.emplace(path, texture);
+	if (instance->textures.count(path) <= 0)
+	{
+		SDL_Texture* texture = IMG_LoadTexture(getType<SDL_Renderer>("renderer"), path.c_str());
+		instance->textures.emplace(path, texture);
+	}
 	else
 	{
-		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite is replacing an existing item. %s already existed in the database!", path.c_str());
+		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite %s already existed in the database, skipping.", path.c_str());
+		// Unless a sprite is being reloaded this should never have to happen
+		/*SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite is replacing an existing item. %s already existed in the database!", path.c_str());
 		try
 		{
 			if (instance->textures[path] != NULL) SDL_DestroyTexture((SDL_Texture*)instance->textures[path]);
@@ -371,7 +376,7 @@ int SDLWrapper::LoadSprite(const std::string& path)
 		{
 			std::cout << "Failed to delete sprite: " << e.what() << std::endl;
 		}
-		instance->textures[path] = texture;
+		instance->textures[path] = texture;*/
 	}
 
 	return 0;
@@ -384,7 +389,7 @@ void SDLWrapper::DrawSprite(const std::string& n, gobl::vec2i pos, gobl::vec2i s
 	if (n.size() < 2) throw std::runtime_error("Cannot draw: Unable to parse empty string!");
 	if (instance->textures.count(n) <= 0)
 	{
-		throw std::runtime_error(("Cannot draw: " + n + " because it has not been loaded!").c_str());;
+		throw std::runtime_error(("Cannot draw: " + n + " because it has not been loaded!").c_str());
 	}
 
 	if (scale.x == 0 && scale.y == 0) SDL_QueryTexture(static_cast<SDL_Texture*>(instance->textures[n]), NULL, NULL, &scale.x, &scale.y); // Load the default size of the texture

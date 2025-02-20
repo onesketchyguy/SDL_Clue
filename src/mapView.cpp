@@ -54,8 +54,32 @@ void MapView::DrawCharacters(float deltaTime)
 	for (int i = 0; i < rooms.at(getRoomIndex(playerRoom)).props.size(); i++)
 	{
 		auto& prop = rooms.at(getRoomIndex(playerRoom)).props.at(i);
-		SDLWrapper::DrawSprite(prop.sprite.name, prop.pos, gobl::vec2i{ prop.scale, prop.scale },
-			sdl::WHITE, prop.order); // TODO: Allow the designer to set the order of props/characters
+		gobl::vec2i pos = prop.pos;
+		gobl::vec2i scale = gobl::vec2i{ prop.scale, prop.scale };
+
+		if (SDLWrapper::getMouse().over(prop.pos, gobl::vec2i{ prop.scale, prop.scale }))
+		{
+			scale *= 1.1;
+			pos *= 0.97;
+			cursorTip = prop.name;
+			if (SDLWrapper::getMouse().bDown(0))
+			{
+				std::cout << prop.onClick << std::endl;
+
+				// FIXME: Actually properly implement these please
+				if (prop.onClick == "call")
+				{
+					std::cout << "Calling home..." << std::endl;
+				}
+
+				if (prop.onClick == "weapon")
+				{
+					std::cout << "Is that the weapon?" << std::endl;
+				}
+			}
+		}
+
+		SDLWrapper::DrawSprite(prop.sprite.name, pos, scale, sdl::WHITE, prop.order);
 	}
 
 	if (cursorTip.size() > 0)

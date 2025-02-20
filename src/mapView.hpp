@@ -6,18 +6,16 @@
 
 struct Standoff
 {
-	gobl::vec2i pos;
-	int scale;
+	gobl::vec2i pos = { 0, 0 };
+	int scale = 200;
 	short order = 0;
 };
 
-struct Prop
+struct Prop : public Standoff
 {
 	std::string name;
+	std::string onClick;
 	SpriteData sprite;
-	gobl::vec2i pos;
-	int scale;
-	short order = 0;
 };
 
 struct Room

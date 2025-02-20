@@ -7,78 +7,56 @@ rooms:
   - char: 's'
     components: 
       - type: navable
-      - prop: 
-          name: lipsObj
-          order: 0
-          scale: 200
-          sprite: 
-            height: 300
-            name: sprites/response.png
-            width: 300
-          x: 100
-          y: 100
       - standoff: 
-          order: 0
-          scale: 240
-          x: 249
-          y: 333
+          scale: 380
+          x: 211
+          y: 262
       - standoff: 
-          order: 0
-          scale: 240
-          x: 10
-          y: 334
+          scale: 310
+          x: 17
+          y: 194
       - standoff: 
-          order: 0
-          scale: 270
-          x: 267
-          y: 519
+          scale: 320
+          x: 207
+          y: 449
       - standoff: 
-          order: 0
-          scale: 240
-          x: 492
-          y: 320
+          scale: 390
+          x: 525
+          y: 310
       - standoff: 
-          order: 0
-          scale: 260
-          x: 514
-          y: 483
+          scale: 400
+          x: 475
+          y: 439
       - standoff: 
-          order: 0
-          scale: 240
-          x: 37
-          y: 532
+          scale: 370
+          x: 8
+          y: 420
     name: Study
     sprite: sprites/study.png
   - char: 'l'
     components: 
       - type: navable
       - standoff: 
-          order: 0
           scale: 240
           x: 400
           y: 464
       - standoff: 
-          order: 0
           scale: 240
           x: 196
           y: 401
       - standoff: 
-          order: 0
           scale: 270
           x: 280
           y: 541
       - standoff: 
-          order: 0
           scale: 240
           x: 572
           y: 359
       - standoff: 
-          order: 0
           scale: 260
           x: 10
           y: 537
       - standoff: 
-          order: 0
           scale: 240
           x: 556
           y: 576
@@ -88,32 +66,26 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          order: 0
           scale: 160
           x: 367
           y: 297
       - standoff: 
-          order: 0
           scale: 170
           x: 289
           y: 431
       - standoff: 
-          order: 0
           scale: 170
           x: 468
           y: 404
       - standoff: 
-          order: 0
           scale: 170
           x: 509
           y: 472
       - standoff: 
-          order: 0
           scale: 200
           x: 205
           y: 579
       - standoff: 
-          order: 0
           scale: 200
           x: 515
           y: 586
@@ -123,32 +95,26 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          order: 0
           scale: 240
           x: 6
           y: 437
       - standoff: 
-          order: 0
           scale: 240
           x: 109
           y: 513
       - standoff: 
-          order: 0
           scale: 270
           x: 448
           y: 348
       - standoff: 
-          order: 0
           scale: 240
           x: 588
           y: 487
       - standoff: 
-          order: 0
           scale: 260
           x: 188
           y: 336
       - standoff: 
-          order: 0
           scale: 240
           x: 364
           y: 511
@@ -158,32 +124,26 @@ rooms:
     components: 
       - type: navable
       - standoff: 
-          order: 0
           scale: 240
           x: 152
           y: 319
       - standoff: 
-          order: 0
           scale: 240
           x: 454
           y: 317
       - standoff: 
-          order: 0
           scale: 270
           x: 369
           y: 463
       - standoff: 
-          order: 0
           scale: 240
           x: 515
           y: 488
       - standoff: 
-          order: 0
           scale: 260
           x: 13
           y: 580
       - standoff: 
-          order: 0
           scale: 240
           x: 627
           y: 401
@@ -192,73 +152,40 @@ rooms:
   - char: 'k'
     components: 
       - type: navable
+      - prop: 
+          name: Telephone
+          onclick: call
+          scale: 170
+          sprite: 
+            name: sprites/telephone.png
+          x: 477
+          y: 181
       - standoff: 
-          order: 0
-          scale: 240
-          x: 81
-          y: 506
+          scale: 470
+          x: "-92"
+          y: 372
       - standoff: 
-          order: 0
-          scale: 240
-          x: 537
-          y: 542
+          scale: 450
+          x: 488
+          y: 359
       - standoff: 
-          order: 0
-          scale: 270
-          x: "-37"
-          y: 320
-      - standoff: 
-          order: 0
-          scale: 240
-          x: 608
-          y: 335
-      - standoff: 
-          order: 0
-          scale: 260
-          x: 292
-          y: 554
-      - standoff: 
-          order: 0
-          scale: 240
-          x: 199
-          y: 232
-    name: Kitchen
-    sprite: sprites/kitchen.png
-  - char: 'c'
-    components: 
-      - type: navable
-      - standoff: 
-          order: 0
-          scale: 240
-          x: 56
-          y: 530
-      - standoff: 
-          order: 0
-          scale: 240
-          x: 126
+          scale: 520
+          x: 279
           y: 308
       - standoff: 
-          order: 0
-          scale: 270
-          x: 492
-          y: 220
+          scale: 470
+          x: 318
+          y: 336
       - standoff: 
-          order: 0
-          scale: 240
-          x: 629
-          y: 388
+          scale: 480
+          x: 149
+          y: 328
       - standoff: 
-          order: 0
-          scale: 260
-          x: 554
-          y: 560
-      - standoff: 
-          order: 0
-          scale: 240
-          x: 344
-          y: 426
-    name: Conservatory
-    sprite: sprites/conservatory.png
+          scale: 410
+          x: 42
+          y: 413
+    name: Kitchen
+    sprite: sprites/kitchen.png
 scenes: 
   - name: conversation
     responses: 
