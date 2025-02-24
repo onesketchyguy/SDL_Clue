@@ -53,6 +53,7 @@ namespace sdl
 	static const SDL_Color
 		LIGHT_GREY(220, 220, 220, 255), GREY(192, 192, 192, 255), DARK_GREY(128, 128, 128, 255), VERY_DARK_GREY(64, 64, 64, 255),
 		RED(255, 0, 0, 255), DARK_RED(128, 0, 0, 255), VERY_DARK_RED(64, 0, 0, 255),
+		PURPLE(132, 11, 245), DARK_PURPLE(89, 12, 179),
 		YELLOW(255, 255, 0, 255), DARK_YELLOW(128, 128, 0, 255), VERY_DARK_YELLOW(64, 64, 0, 255),
 		GREEN(0, 255, 0, 255), DARK_GREEN(0, 128, 0, 255), VERY_DARK_GREEN(0, 64, 0, 255),
 		CYAN(0, 255, 255, 255), DARK_CYAN(0, 128, 128, 255), VERY_DARK_CYAN(0, 64, 64, 255),
@@ -158,19 +159,29 @@ public:
 	static const int getScreenHeight() { return instance->screenHeight; }
 	static const int getScreenWidth() { return instance->screenWidth; }
 
-	static int LoadSprite(const std::string&);
+	/// <summary>
+	/// Loads a texture into memory
+	/// </summary>
+	/// <param name="Directory">string Directory of the texture.</param>
+	/// <param name="Reload">bool Reload the texture if it has already been loaded.</param>
+	/// <returns></returns>
+	static int LoadSprite(const std::string&, bool reload = false);
 
 	static void DrawSprite(const std::string&, gobl::vec2i pos = gobl::vec2i{}, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 }, short order = 0);
 	static void DrawSprite(const std::string&, gobl::vec2i pos, gobl::vec2i scale, gobl::vec2i srcPos, gobl::vec2i srcScale, SDL_Color tint = SDL_Color{ 255U, 255U, 255U, 255 }, short order = 0);
 
 	static void DrawRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void DrawRect(gobl::vec2i pos, gobl::vec2i scale, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void OutlineRect(int x, int y, int w, int h, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
+	static void OutlineRect(gobl::vec2i pos, gobl::vec2i scale, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void DrawCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);
 	static void OutlineCircle(int x, int y, float rad, unsigned char r = 255, unsigned char g = 255, unsigned char b = 255, unsigned char a = 255);
 	static void DrawString(const std::string& str, gobl::vec2i pos = {}, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 }, const uint8_t& fontSize = 16, const std::string& font = DEFAULT_FONT);
 	static void DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color color = SDL_Color{ 255U, 255U, 255U, 255 });
 	static void SetClear(const SDL_Color& col);
+
+	static SDL_Color DrawColorMap(gobl::vec2i pos, gobl::vec2i scale);
 
 	static std::function<void(const char*)> onFileDropped;
 	static float deltaTime();

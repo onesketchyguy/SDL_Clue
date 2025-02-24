@@ -354,29 +354,31 @@ bool SDLWrapper::Update()
 }
 
 // MARK: Draw routines
-int SDLWrapper::LoadSprite(const std::string& path)
+int SDLWrapper::LoadSprite(const std::string& path, bool reload)
 {
 	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", path.c_str());
+	SDL_Texture* texture = IMG_LoadTexture(getType<SDL_Renderer>("renderer"), path.c_str());
 
 	if (instance->textures.count(path) <= 0)
 	{
-		SDL_Texture* texture = IMG_LoadTexture(getType<SDL_Renderer>("renderer"), path.c_str());
 		instance->textures.emplace(path, texture);
 	}
 	else
 	{
-		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite %s already existed in the database, skipping.", path.c_str());
-		// Unless a sprite is being reloaded this should never have to happen
-		/*SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite is replacing an existing item. %s already existed in the database!", path.c_str());
-		try
+		if (reload)
 		{
-			if (instance->textures[path] != NULL) SDL_DestroyTexture((SDL_Texture*)instance->textures[path]);
+			SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite is replacing an existing item. %s already existed in the database!", path.c_str());
+			try
+			{
+				if (instance->textures[path] != NULL) SDL_DestroyTexture((SDL_Texture*)instance->textures[path]);
+			}
+			catch (const std::exception& e)
+			{
+				std::cout << "Failed to delete sprite: " << e.what() << std::endl;
+			}
+			instance->textures[path] = texture;
 		}
-		catch (const std::exception& e)
-		{
-			std::cout << "Failed to delete sprite: " << e.what() << std::endl;
-		}
-		instance->textures[path] = texture;*/
+		else SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Sprite %s already existed in the database, skipping.", path.c_str());
 	}
 
 	return 0;
@@ -407,11 +409,13 @@ void SDLWrapper::DrawRect(int x, int y, int w, int h, SDL_Color col)
 {
 	renderables.push_back(new Renderable(x * instance->renderScale, y * instance->renderScale, w * instance->renderScale, h * instance->renderScale, col));
 }
+void SDLWrapper::DrawRect(gobl::vec2i pos, gobl::vec2i scale, SDL_Color color) { DrawRect(pos.x, pos.y, scale.x, scale.y, color); }
 
 void SDLWrapper::OutlineRect(int x, int y, int w, int h, SDL_Color col)
 {
 	renderables.push_back(new Renderable(x * instance->renderScale, y * instance->renderScale, w * instance->renderScale, h * instance->renderScale, col, false));
 }
+void SDLWrapper::OutlineRect(gobl::vec2i pos, gobl::vec2i scale, SDL_Color color) { OutlineRect(pos.x, pos.y, scale.x, scale.y, color); }
 
 void SDLWrapper::DrawCircle(int x, int y, float rad, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
@@ -439,6 +443,43 @@ void SDLWrapper::DrawLine(gobl::vec2f a, gobl::vec2f b, SDL_Color col)
 void SDLWrapper::SetClear(const SDL_Color& col)
 {
 	instance->clearColor = col;
+}
+
+SDL_Color SDLWrapper::DrawColorMap(gobl::vec2i pos, gobl::vec2i scale)
+{
+	SDL_Color toReturn = sdl::BLANK;
+
+	for (int x = 0; x < scale.x; x++)
+	{
+		for (int y = 0; y < scale.y; y++)
+		{
+			float r = static_cast<float>(x) / scale.x;
+			float g = static_cast<float>(y) / scale.y;
+			float b = 0.5f; // Set a default value for blue
+
+			// Calculate the blue component based on the position
+			if (x < scale.x / 2)
+			{
+				b = static_cast<float>(x) / (scale.x / 2);
+			}
+			else
+			{
+				b = static_cast<float>(scale.x - x) / (scale.x / 2);
+			}
+
+			SDL_Color col{
+				static_cast<int>(r * 255.0f),
+				static_cast<int>(g * 255.0f),
+				static_cast<int>(b * 255.0f),
+				255 // Static alpha value
+			};
+
+			DrawRect(pos.x + x, pos.y + y, 1, 1, col);
+			if (getMousePos().x == pos.x + x && getMousePos().y == pos.y + y) toReturn = col;
+		}
+	}
+
+	return toReturn;
 }
 
 float SDLWrapper::deltaTime()
